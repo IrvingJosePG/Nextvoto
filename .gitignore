@@ -1,0 +1,7 @@
+**/application.properties
+**/.env
+backend/target/
+frontend/node_modules/
+frontend/dist/
+.idea/
+.vscode/
