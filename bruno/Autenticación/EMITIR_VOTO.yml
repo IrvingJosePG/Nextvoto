@@ -1,0 +1,29 @@
+info:
+  name: EMITIR_VOTO
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: http://localhost:8080/api/votante/encuestas/4/votar
+  body:
+    type: json
+    data: |-
+      {
+        "respuestas": [
+          {
+            "idPregunta": 6,
+            "idOpcion": 14
+          }
+        ]
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzM4NCJ9.eyJub21icmUiOiJQcnVlYmEgTmV4dFZvdG8iLCJyb2wiOiJWT1RBTlRFIiwic3ViIjoicHJ1ZWJhQG5leHR2b3RvLmNvbSIsImlhdCI6MTc5NTAxODE4NywiZXhwIjoxNzk1MTA0NTg3fQ.YApYnhmtR5pBV49m4k9TlcOYHQJAdG73H7TF_e81dRyKeqaXFESmQO9qMrcBSNOZ
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
