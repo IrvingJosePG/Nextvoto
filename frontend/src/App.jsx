@@ -1,122 +1,80 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute } from './routes/ProtectedRoute';
+import { Navbar } from './components/Navbar';
 
-function App() {
-  const [count, setCount] = useState(0)
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+import RecuperarPassword from './pages/auth/RecuperarPassword';
 
+const LayoutPrivado = ({ children }) => (
+  <div className="min-h-screen bg-fondo">
+    <Navbar />
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {children}
+    </main>
+  </div>
+);
+
+const VistaTemporal = ({ titulo }) => (
+  <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+    <h1 className="text-xl font-bold text-slate-900">{titulo}</h1>
+    <p className="text-sm text-slate-500 mt-1">
+      Sesión iniciada correctamente. Aquí construiremos las vistas de este módulo.
+    </p>
+  </div>
+);
+
+export default function App() {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Rutas públicas */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/recuperar" element={<RecuperarPassword />} />
 
-      <div className="ticks"></div>
+          {/* Rutas Votante */}
+          <Route
+            path="/votante"
+            element={
+              <ProtectedRoute allowedRoles={['VOTANTE']}>
+                <LayoutPrivado>
+                  <VistaTemporal titulo="Panel del Votante (Siguiente paso)" />
+                </LayoutPrivado>
+              </ProtectedRoute>
+            }
+          />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          {/* Rutas Moderador (Placeholder para tu compañero) */}
+          <Route
+            path="/moderador/encuestas"
+            element={
+              <ProtectedRoute allowedRoles={['MODERADOR']}>
+                <LayoutPrivado>
+                  <VistaTemporal titulo="Panel del Moderador" />
+                </LayoutPrivado>
+              </ProtectedRoute>
+            }
+          />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+          {/* Rutas Admin (Placeholder para tu compañero) */}
+          <Route
+            path="/admin/usuarios"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <LayoutPrivado>
+                  <VistaTemporal titulo="Panel del Administrador" />
+                </LayoutPrivado>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Redirección por defecto */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
 }
-
-export default App
