@@ -49,10 +49,10 @@ public class AuthController {
             @Valid @RequestBody RecuperarPasswordRequest request
     ) {
         String codigo = authService.solicitarRecuperacion(request);
-        return ResponseEntity.ok(new MessageResponse(
-                "Si el correo existe, se ha enviado un código de recuperación",
-                codigo
-        ));
+        String mensaje = (request.getEmail() != null && !request.getEmail().isBlank())
+                ? "Hemos enviado un código de verificación a tu correo electrónico"
+                : "Hemos enviado un código de verificación a tu WhatsApp";
+        return ResponseEntity.ok(new MessageResponse(mensaje, codigo));
     }
 
     @PostMapping("/restablecer")

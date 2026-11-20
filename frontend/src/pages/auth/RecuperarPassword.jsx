@@ -10,6 +10,7 @@ export default function RecuperarPassword() {
 
   const [paso, setPaso] = useState(1); // 1: Solicitar código, 2: Restablecer contraseña
   const [email, setEmail] = useState('');
+  const [telefono, setTelefono] = useState('');
   const [codigo, setCodigo] = useState('');
   const [nuevaPassword, setNuevaPassword] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
@@ -17,20 +18,47 @@ export default function RecuperarPassword() {
   const [infoMessage, setInfoMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const emailTrim = email.trim();
+  const telefonoLimpio = telefono.replace(/\s+/g, '');
+  const destino = emailTrim || telefono.trim();
+
   const handleSolicitarCodigo = async (e) => {
     e.preventDefault();
     setGeneralError('');
     setFieldErrors({});
 
-    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
+    if (!emailTrim && !telefonoLimpio) {
+      setGeneralError('Ingresa tu correo electrónico o tu número telefónico.');
+      return;
+    }
+
+    if (emailTrim && telefonoLimpio) {
+      setGeneralError('Ingresa solo una opción: correo electrónico o número telefónico.');
+      return;
+    }
+
+    if (emailTrim && !/\S+@\S+\.\S+/.test(emailTrim)) {
       setFieldErrors({ email: 'Ingresa un correo electrónico válido' });
+      return;
+    }
+
+    if (telefonoLimpio && !/^\+?[0-9]{10,15}$/.test(telefonoLimpio)) {
+      setFieldErrors({ telefono: 'Ingresa un teléfono válido de 10 a 15 dígitos' });
       return;
     }
 
     setIsLoading(true);
     try {
-      const { data } = await api.post('/auth/recuperar', { email: email.trim() });
-      setInfoMessage(data?.message || 'Hemos enviado un código de verificación a tu correo.');
+      const { data } = await api.post('/auth/recuperar', {
+        email: emailTrim || null,
+        telefono: telefonoLimpio || null,
+      });
+
+      const mensajeDefault = emailTrim
+        ? 'Hemos enviado un código de verificación a tu correo electrónico.'
+        : 'Hemos enviado un código de verificación a tu WhatsApp.';
+
+      setInfoMessage(data?.message || mensajeDefault);
       setPaso(2);
     } catch (err) {
       const data = err.response?.data;
@@ -49,8 +77,13 @@ export default function RecuperarPassword() {
     setGeneralError('');
     const errores = {};
 
-    if (!codigo.trim()) errores.codigo = 'Ingresa el código de verificación';
-    if (!nuevaPassword || nuevaPassword.length < 8) {
+    if (!codigo.trim()) {
+      errores.token = 'Ingresa el código de verificación';
+    }
+    if (
+      !nuevaPassword ||
+      !/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#._-])[A-Za-z\d@$!%*?&#._-]{8,}$/.test(nuevaPassword)
+    ) {
       errores.nuevaPassword = 'Mínimo 8 caracteres, una mayúscula, un número y un símbolo';
     }
 
@@ -62,8 +95,7 @@ export default function RecuperarPassword() {
     setIsLoading(true);
     try {
       await api.post('/auth/restablecer', {
-        email: email.trim(),
-        codigo: codigo.trim(),
+        token: codigo.trim(),
         nuevaPassword,
       });
       navigate('/login', { replace: true });
@@ -93,12 +125,12 @@ export default function RecuperarPassword() {
             Seguridad de cuenta
           </p>
           <h2 className="text-3xl font-extrabold text-slate-900 mb-2">
-            Recuperar contraseña
+            Recupera tu cuenta
           </h2>
-          <p className="text-slate-500 text-sm mb-8">
+          <p className="text-slate-500 text-sm mb-7">
             {paso === 1
-              ? 'Ingresa tu correo registrado y te enviaremos un código temporal de 15 minutos.'
-              : `Ingresa el código enviado a ${email} y define tu nueva contraseña.`}
+              ? 'Recibirás un código de recuperación temporal en tu correo electrónico o número telefónico.'
+              : `Ingresa el código enviado a ${destino} y define tu nueva contraseña.`}
           </p>
 
           {infoMessage && (
@@ -109,15 +141,38 @@ export default function RecuperarPassword() {
           )}
 
           {paso === 1 ? (
-            <form onSubmit={handleSolicitarCodigo} className="space-y-5" noValidate>
+            <form onSubmit={handleSolicitarCodigo} className="space-y-4" noValidate>
               <Input
                 id="email"
-                label="Correo electrónico"
+                label="Ingresa tu correo electrónico"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="correo@nextvoto.com"
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (fieldErrors.email) setFieldErrors({});
+                }}
+                placeholder="ejemplo@correo.com"
                 error={fieldErrors.email}
+              />
+
+              {/* Separador visual "ó" */}
+              <div className="flex items-center gap-3 py-1">
+                <div className="h-px bg-slate-200 flex-1" />
+                <span className="text-sm font-bold text-slate-500">ó</span>
+                <div className="h-px bg-slate-200 flex-1" />
+              </div>
+
+              <Input
+                id="telefono"
+                label="Ingresa tu número telefónico"
+                type="tel"
+                value={telefono}
+                onChange={(e) => {
+                  setTelefono(e.target.value);
+                  if (fieldErrors.telefono) setFieldErrors({});
+                }}
+                placeholder="951 444 03 30"
+                error={fieldErrors.telefono}
               />
 
               {generalError && (
@@ -126,8 +181,8 @@ export default function RecuperarPassword() {
                 </div>
               )}
 
-              <Button type="submit" variant="primary" isLoading={isLoading} className="w-full py-3">
-                Enviar código de recuperación
+              <Button type="submit" variant="primary" isLoading={isLoading} className="w-full py-3 mt-2">
+                {isLoading ? 'Enviando código...' : 'Enviar Código'}
               </Button>
             </form>
           ) : (
@@ -137,9 +192,12 @@ export default function RecuperarPassword() {
                 label="Código de verificación"
                 type="text"
                 value={codigo}
-                onChange={(e) => setCodigo(e.target.value)}
+                onChange={(e) => {
+                  setCodigo(e.target.value);
+                  if (fieldErrors.token) setFieldErrors((prev) => ({ ...prev, token: '' }));
+                }}
                 placeholder="Ej. 482910"
-                error={fieldErrors.codigo}
+                error={fieldErrors.token}
               />
 
               <Input
@@ -147,7 +205,12 @@ export default function RecuperarPassword() {
                 label="Nueva contraseña"
                 type="password"
                 value={nuevaPassword}
-                onChange={(e) => setNuevaPassword(e.target.value)}
+                onChange={(e) => {
+                  setNuevaPassword(e.target.value);
+                  if (fieldErrors.nuevaPassword) {
+                    setFieldErrors((prev) => ({ ...prev, nuevaPassword: '' }));
+                  }
+                }}
                 placeholder="Mín. 8 caracteres, 1 mayúscula, 1 número y 1 símbolo"
                 error={fieldErrors.nuevaPassword}
               />
@@ -159,8 +222,23 @@ export default function RecuperarPassword() {
               )}
 
               <Button type="submit" variant="primary" isLoading={isLoading} className="w-full py-3">
-                Restablecer contraseña
+                {isLoading ? 'Actualizando...' : 'Restablecer contraseña'}
               </Button>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPaso(1);
+                    setInfoMessage('');
+                    setGeneralError('');
+                    setFieldErrors({});
+                  }}
+                  className="text-xs font-semibold text-slate-500 hover:text-primary cursor-pointer"
+                >
+                  Cambiar correo o número telefónico
+                </button>
+              </div>
             </form>
           )}
 

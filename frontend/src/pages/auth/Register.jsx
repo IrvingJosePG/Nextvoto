@@ -11,6 +11,8 @@ export default function Register() {
 
   const [formData, setFormData] = useState({
     nombre: '',
+    apellidoPaterno: '',
+    apellidoMaterno: '',
     email: '',
     telefono: '',
     password: '',
@@ -31,20 +33,32 @@ export default function Register() {
   const validarFormulario = () => {
     const errores = {};
 
-    if (!formData.nombre.trim() || formData.nombre.trim().length < 3) {
-      errores.nombre = 'Ingresa tu nombre completo (mínimo 3 caracteres)';
+    if (!formData.nombre.trim() || formData.nombre.trim().length < 2) {
+      errores.nombre = 'Ingresa tu(s) nombre(s)';
+    }
+
+    if (!formData.apellidoPaterno.trim() || formData.apellidoPaterno.trim().length < 2) {
+      errores.apellidoPaterno = 'Ingresa tu apellido paterno';
+    }
+
+    if (!formData.apellidoMaterno.trim() || formData.apellidoMaterno.trim().length < 2) {
+      errores.apellidoMaterno = 'Ingresa tu apellido materno';
     }
 
     if (!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)) {
       errores.email = 'Ingresa un correo electrónico válido';
     }
 
-    if (formData.telefono.trim() && !/^\+?[0-9]{10,15}$/.test(formData.telefono.trim())) {
-      errores.telefono = 'Ingresa un teléfono válido de 10 a 15 dígitos (ej. +525512345678)';
+    const telefonoLimpio = formData.telefono.replace(/\s+/g, '');
+    if (!telefonoLimpio) {
+      errores.telefono = 'El número de teléfono es obligatorio';
+    } else if (!/^\+?[0-9]{10,15}$/.test(telefonoLimpio)) {
+      errores.telefono = 'Ingresa un teléfono válido de 10 a 15 dígitos';
     }
 
     if (!formData.password || formData.password.length < 8) {
-      errores.password = 'La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un símbolo';
+      errores.password =
+        'La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un símbolo';
     }
 
     if (formData.password !== formData.confirmPassword) {
@@ -61,12 +75,22 @@ export default function Register() {
 
     if (!validarFormulario()) return;
 
+    const nombreCompleto = [
+      formData.nombre.trim(),
+      formData.apellidoPaterno.trim(),
+      formData.apellidoMaterno.trim(),
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    const telefonoLimpio = formData.telefono.replace(/\s+/g, '');
+
     setIsLoading(true);
     try {
       await register({
-        nombre: formData.nombre.trim(),
+        nombre: nombreCompleto,
         email: formData.email.trim(),
-        telefono: formData.telefono.trim() || null,
+        telefono: telefonoLimpio,
         password: formData.password,
       });
       navigate('/votante', { replace: true });
@@ -106,12 +130,47 @@ export default function Register() {
             <Input
               id="nombre"
               name="nombre"
-              label="Nombre completo"
+              label="Nombre(s)"
               type="text"
               value={formData.nombre}
               onChange={handleChange}
-              placeholder="Ej. Miguel Ángel Torres"
+              placeholder="Ej. Miguel Ángel"
               error={fieldErrors.nombre}
+            />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                id="apellidoPaterno"
+                name="apellidoPaterno"
+                label="Apellido Paterno"
+                type="text"
+                value={formData.apellidoPaterno}
+                onChange={handleChange}
+                placeholder="Ej. Sandoval"
+                error={fieldErrors.apellidoPaterno}
+              />
+
+              <Input
+                id="apellidoMaterno"
+                name="apellidoMaterno"
+                label="Apellido Materno"
+                type="text"
+                value={formData.apellidoMaterno}
+                onChange={handleChange}
+                placeholder="Ej. Reyes"
+                error={fieldErrors.apellidoMaterno}
+              />
+            </div>
+
+            <Input
+              id="telefono"
+              name="telefono"
+              label="Teléfono"
+              type="tel"
+              value={formData.telefono}
+              onChange={handleChange}
+              placeholder="Ej. 951 444 03 30"
+              error={fieldErrors.telefono}
             />
 
             <Input
@@ -121,19 +180,8 @@ export default function Register() {
               type="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="correo@ejemplo.com"
+              placeholder="ejemplo@correo.com"
               error={fieldErrors.email}
-            />
-
-            <Input
-              id="telefono"
-              name="telefono"
-              label="Teléfono (opcional)"
-              type="tel"
-              value={formData.telefono}
-              onChange={handleChange}
-              placeholder="+525512345678"
-              error={fieldErrors.telefono}
             />
 
             <Input
@@ -165,7 +213,7 @@ export default function Register() {
             )}
 
             <Button type="submit" variant="primary" isLoading={isLoading} className="w-full py-3 mt-2">
-              {isLoading ? 'Creando cuenta...' : 'Registrarme'}
+              {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
             </Button>
           </form>
 

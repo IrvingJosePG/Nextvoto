@@ -1,12 +1,10 @@
 package com.nextvoto.service;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.UUID;
 
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -46,7 +44,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService userDetailsService;
-    private final JavaMailSender mailSender;
+    private final NotificacionService notificacionService;
 
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(
@@ -130,10 +128,25 @@ public class AuthService {
 
     @Transactional
     public String solicitarRecuperacion(RecuperarPasswordRequest request) {
-        Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("No existe una cuenta asociada a ese correo"));
+        boolean tieneEmail = request.getEmail() != null && !request.getEmail().isBlank();
+        boolean tieneTelefono = request.getTelefono() != null && !request.getTelefono().isBlank();
 
-        String codigoRecuperacion = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        if (!tieneEmail && !tieneTelefono) {
+            throw new BusinessException("Debes proporcionar un correo electrónico o un número telefónico");
+        }
+
+        Usuario usuario;
+        if (tieneEmail) {
+            usuario = usuarioRepository.findByEmail(request.getEmail().trim().toLowerCase())
+                    .orElseThrow(() -> new ResourceNotFoundException("No existe una cuenta asociada a ese correo electrónico"));
+        } else {
+            String telLimpio = request.getTelefono().replaceAll("\\s+", "");
+            usuario = usuarioRepository.findByTelefono(telLimpio)
+                    .or(() -> usuarioRepository.findByTelefono("+52" + telLimpio))
+                    .orElseThrow(() -> new ResourceNotFoundException("No existe una cuenta asociada a ese número telefónico"));
+        }
+
+        String codigoRecuperacion = String.format("%06d", new SecureRandom().nextInt(1_000_000));
 
         Token tokenRec = Token.builder()
                 .token(codigoRecuperacion)
@@ -143,16 +156,10 @@ public class AuthService {
                 .build();
         tokenRepository.save(tokenRec);
 
-        try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("no-reply@nextvoto.com");
-            message.setTo(usuario.getEmail());
-            message.setSubject("Recuperación de contraseña - NextVoto");
-            message.setText("Hola " + usuario.getNombre() + ",\n\nTu código de recuperación es: " + codigoRecuperacion +
-                    "\nEste código expira en 15 minutos.");
-            mailSender.send(message);
-        } catch (Exception e) {
-            log.warn("No se pudo enviar correo SMTP en entorno local. Código generado para {}: {}", usuario.getEmail(), codigoRecuperacion);
+        if (tieneEmail) {
+            notificacionService.enviarPinCorreo(usuario.getEmail(), usuario.getNombre(), codigoRecuperacion);
+        } else {
+            notificacionService.enviarPinWhatsApp(usuario.getTelefono(), usuario.getNombre(), codigoRecuperacion);
         }
 
         return codigoRecuperacion;
@@ -168,7 +175,6 @@ public class AuthService {
         usuario.setPassword(passwordEncoder.encode(request.getNuevaPassword()));
         usuarioRepository.save(usuario);
 
-        // Invalidar el token usado eliminándolo
         tokenRepository.delete(tokenValido);
     }
 }
