@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Vote } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import AuthBanner from '../../components/AuthBanner';
 import { Button, Input } from '../../components/ui';
 import logoNextVoto from '../../assets/img/logo_nextvoto.png';
 
 const RUTA_POR_ROL = {
-  ADMIN: '/admin/usuarios',
+  ADMIN: '/admin',
   MODERADOR: '/moderador/encuestas',
   VOTANTE: '/votante',
 };

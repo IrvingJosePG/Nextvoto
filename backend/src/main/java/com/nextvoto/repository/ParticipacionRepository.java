@@ -17,4 +17,6 @@ public interface ParticipacionRepository extends JpaRepository<Participacion, Lo
     List<Participacion> findByUsuarioIdUsuarioAndEstadoOrderByIdParticipacionDesc(Long usuarioId, EstadoParticipacion estado);
     Page<Participacion> findByUsuarioIdUsuarioAndEstado(Long usuarioId, EstadoParticipacion estado, Pageable pageable);
     long countByEncuestaIdEncuestaAndEstado(Long encuestaId, EstadoParticipacion estado);
+    long countByEstado(EstadoParticipacion estado);
+    boolean existsByUsuarioIdUsuarioAndEstado(Long usuarioId, EstadoParticipacion estado);
 }

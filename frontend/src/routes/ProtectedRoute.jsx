@@ -3,7 +3,7 @@ import { Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const RUTA_POR_ROL = {
-  ADMIN: '/admin/usuarios',
+  ADMIN: '/admin',
   MODERADOR: '/moderador/encuestas',
   VOTANTE: '/votante',
 };

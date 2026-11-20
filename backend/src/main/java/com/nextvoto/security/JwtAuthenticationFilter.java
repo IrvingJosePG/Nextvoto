@@ -11,8 +11,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.nextvoto.entity.Token.TipoToken;
+import com.nextvoto.entity.Usuario;
 import com.nextvoto.repository.TokenRepository;
+import com.nextvoto.repository.UsuarioRepository;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,6 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
     private final TokenRepository tokenRepository;
+    private final UsuarioRepository usuarioRepository;
 
     @Override
     protected void doFilterInternal(
@@ -42,26 +47,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String jwt = authHeader.substring(7);
 
-        // Verifica si el token fue invalidado en logout (BLACKLIST)
-        if (tokenRepository.existsByTokenAndTipo(jwt, TipoToken.BLACKLIST)) {
+        if (tokenRepository.existsByTokenAndTipo(jwt, TipoToken.BLACKLIST)
+                || SecurityContextHolder.getContext().getAuthentication() != null) {
             filterChain.doFilter(request, response);
             return;
         }
 
+        Claims claims;
         try {
-            final String userEmail = jwtService.extractUsername(jwt);
-            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-                if (jwtService.isTokenValid(jwt, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities()
-                    );
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
-            }
-        } catch (Exception ignored) {
-            // Si el token expiró o está corrupto, Spring Security devolverá 401/403
+            claims = jwtService.extractAllClaims(jwt);
+        } catch (JwtException | IllegalArgumentException e) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        Usuario usuario = usuarioRepository.findByEmail(claims.getSubject()).orElse(null);
+        if (usuario != null && usuario.getActivo() && jwtService.correspondeA(claims, usuario)) {
+            UserDetails userDetails = userDetailsService.crearDetalles(usuario);
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities()
+            );
+            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authToken);
         }
 
         filterChain.doFilter(request, response);

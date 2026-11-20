@@ -1,15 +1,15 @@
 package com.nextvoto.security;
 
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
 
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
+import com.nextvoto.entity.Usuario;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -26,41 +26,35 @@ public class JwtService {
     private long jwtExpiration;
 
     public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+        return extractAllClaims(token).getSubject();
     }
 
     public Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
+        return extractAllClaims(token).getExpiration();
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
-    }
-
-    public String generateToken(UserDetails userDetails, String rol, String nombre) {
-        Map<String, Object> extraClaims = new HashMap<>();
-        extraClaims.put("rol", rol);
-        extraClaims.put("nombre", nombre);
+    public String generateToken(Usuario usuario) {
         return Jwts.builder()
-                .claims(extraClaims)
-                .subject(userDetails.getUsername())
+                .claim("idUsuario", usuario.getIdUsuario().toString())
+                .claim("rol", usuario.getRol().getNombre())
+                .claim("nombre", usuario.getNombre())
+                .subject(usuario.getEmail())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(getSignInKey())
                 .compact();
     }
 
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+    boolean correspondeA(Claims claims, Usuario usuario) {
+        String idUsuario = claims.get("idUsuario", String.class);
+        if (idUsuario != null) {
+            return idUsuario.equals(usuario.getIdUsuario().toString());
+        }
+        return !claims.getIssuedAt().toInstant().isBefore(usuario.getCreadoEn()
+                .atZone(ZoneId.systemDefault()).toInstant().truncatedTo(ChronoUnit.SECONDS));
     }
 
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private Claims extractAllClaims(String token) {
+    Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSignInKey())
                 .build()

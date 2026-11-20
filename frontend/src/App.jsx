@@ -6,6 +6,10 @@ import { Navbar } from './components/Navbar';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import RecuperarPassword from './pages/auth/RecuperarPassword';
+import AdminLayout from './pages/admin/AdminLayout';
+import AdminInicio from './pages/admin/AdminInicio';
+import AdminUsuarios from './pages/admin/AdminUsuarios';
+import AdminEncuestas from './pages/admin/AdminEncuestas';
 
 const LayoutPrivado = ({ children }) => (
   <div className="min-h-screen bg-fondo">
@@ -59,17 +63,18 @@ export default function App() {
             }
           />
 
-          {/* Rutas Admin (Placeholder para tu compañero) */}
           <Route
-            path="/admin/usuarios"
+            path="/admin"
             element={
               <ProtectedRoute allowedRoles={['ADMIN']}>
-                <LayoutPrivado>
-                  <VistaTemporal titulo="Panel del Administrador" />
-                </LayoutPrivado>
+                <AdminLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<AdminInicio />} />
+            <Route path="usuarios" element={<AdminUsuarios />} />
+            <Route path="encuestas" element={<AdminEncuestas />} />
+          </Route>
 
           {/* Redirección por defecto */}
           <Route path="*" element={<Navigate to="/login" replace />} />

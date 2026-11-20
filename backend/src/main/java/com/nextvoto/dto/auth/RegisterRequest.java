@@ -15,9 +15,11 @@ public class RegisterRequest {
 
     @NotBlank(message = "El correo electrónico es obligatorio")
     @Email(message = "El formato del correo electrónico no es válido")
+    @Size(max = 150, message = "El correo debe tener hasta 150 caracteres")
     private String email;
 
     @NotBlank(message = "La contraseña es obligatoria")
+    @Size(max = 72, message = "La contraseña debe tener hasta 72 caracteres")
     @Pattern(
         regexp = "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#._-])[A-Za-z\\d@$!%*?&#._-]{8,}$",
         message = "La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial"
