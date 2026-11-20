@@ -29,11 +29,9 @@ spring.mail.password=
 spring.mail.properties.mail.smtp.auth=false
 spring.mail.properties.mail.smtp.starttls.enable=false
 
-# Twilio (SMS y WhatsApp)
-twilio.account.sid=TU_TWILIO_ACCOUNT_SID
-twilio.auth.token=TU_TWILIO_AUTH_TOKEN
-twilio.phone.number=+1234567890
-twilio.whatsapp.number=whatsapp:+14155238886
+# CallMeBot (Notificaciones WhatsApp)
+callmebot.api.url=https://api.callmebot.com/whatsapp.php
+callmebot.api.key=TU_CALLMEBOT_API_KEY
 
 # CORS Frontend
 app.cors.allowed-origins=http://localhost:5173

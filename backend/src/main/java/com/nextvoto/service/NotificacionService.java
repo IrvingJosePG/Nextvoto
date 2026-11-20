@@ -1,15 +1,16 @@
 package com.nextvoto.service;
 
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import com.nextvoto.exception.BusinessException;
 
@@ -23,19 +24,16 @@ import lombok.extern.slf4j.Slf4j;
 public class NotificacionService {
 
     private final JavaMailSender mailSender;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final HttpClient httpClient = HttpClient.newHttpClient();
 
     @Value("${spring.mail.username}")
     private String mailFrom;
 
-    @Value("${twilio.account.sid}")
-    private String twilioSid;
+    @Value("${callmebot.api.url}")
+    private String callMeBotUrl;
 
-    @Value("${twilio.auth.token}")
-    private String twilioToken;
-
-    @Value("${twilio.whatsapp.from}")
-    private String twilioWhatsappFrom;
+    @Value("${callmebot.api.key}")
+    private String callMeBotApiKey;
 
     public void enviarPinCorreo(String emailDestino, String nombreUsuario, String pin) {
         try {
@@ -67,39 +65,58 @@ public class NotificacionService {
     }
 
     public void enviarPinWhatsApp(String telefonoDestino, String nombreUsuario, String pin) {
+        String texto = "Hola " + nombreUsuario + ", tu código de recuperación de NextVoto es: *" + pin + "*. Válido por 15 minutos.";
+        enviarWhatsApp(telefonoDestino, texto);
+    }
+
+    public void enviarWhatsApp(String telefonoDestino, String mensaje) {
+        if (telefonoDestino == null || telefonoDestino.isBlank()) {
+            throw new BusinessException("El usuario no tiene un número de teléfono registrado.");
+        }
+
         try {
             String numeroFormateado = formatearWhatsAppMexico(telefonoDestino);
-            String url = "https://api.twilio.com/2010-04-01/Accounts/" + twilioSid + "/Messages.json";
+            String mensajeCodificado = URLEncoder.encode(mensaje, StandardCharsets.UTF_8);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBasicAuth(twilioSid, twilioToken);
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            String endpoint = String.format(
+                "%s?phone=%s&text=%s&apikey=%s",
+                callMeBotUrl,
+                numeroFormateado,
+                mensajeCodificado,
+                callMeBotApiKey
+            );
 
-            MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-            body.add("From", twilioWhatsappFrom);
-            body.add("To", "whatsapp:" + numeroFormateado);
-            body.add("Body", "Hola " + nombreUsuario + ", tu código de recuperación de NextVoto es: *" + pin + "*. Válido por 15 minutos.");
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(endpoint))
+                .GET()
+                .build();
 
-            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
-            restTemplate.postForEntity(url, request, String.class);
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200 || (response.body() != null && response.body().contains("ERROR"))) {
+                log.error("Respuesta de error de CallMeBot ({}): {}", response.statusCode(), response.body());
+                throw new BusinessException("No se pudo entregar el mensaje de WhatsApp mediante CallMeBot.");
+            }
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error enviando WhatsApp a {}: {}", telefonoDestino, e.getMessage());
-            throw new BusinessException("No se pudo enviar el mensaje de WhatsApp. Verifica que tu número esté unido al Sandbox de Twilio.");
+            throw new BusinessException("No se pudo enviar el mensaje de WhatsApp. Verifica que el número esté activado en CallMeBot.");
         }
     }
 
-    // Twilio WhatsApp requiere formato +521 + 10 dígitos para números celulares de México
+    // CallMeBot requiere 521 + 10 dígitos (sin signo +) para celulares de México
     private String formatearWhatsAppMexico(String telefono) {
-        String limpio = telefono.replaceAll("[^0-9+]", "");
-        if (limpio.startsWith("+521") && limpio.length() == 14) {
-            return limpio;
+        String digitos = telefono.replaceAll("[^0-9]", "");
+        if (digitos.startsWith("521") && digitos.length() == 13) {
+            return digitos;
         }
-        if (limpio.startsWith("+52") && limpio.length() == 13) {
-            return "+521" + limpio.substring(3);
+        if (digitos.startsWith("52") && digitos.length() == 12) {
+            return "521" + digitos.substring(2);
         }
-        if (limpio.length() == 10) {
-            return "+521" + limpio;
+        if (digitos.length() == 10) {
+            return "521" + digitos;
         }
-        return limpio.startsWith("+") ? limpio : "+" + limpio;
+        return digitos;
     }
 }
