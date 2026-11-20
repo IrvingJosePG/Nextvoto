@@ -10,6 +10,10 @@ import Topbar from './components/Topbar';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import RecuperarPassword from './pages/auth/RecuperarPassword';
+import AdminLayout from './pages/admin/AdminLayout';
+import AdminInicio from './pages/admin/AdminInicio';
+import AdminUsuarios from './pages/admin/AdminUsuarios';
+import AdminEncuestas from './pages/admin/AdminEncuestas';
 
 // Vistas del Módulo Votante
 import DashboardVotante from './pages/votante/DashboardVotante';
@@ -98,15 +102,18 @@ export default function App() {
             }
           />
 
-          {/* Rutas Admin (Placeholder para tu compañero) */}
           <Route
-            path="/admin/usuarios"
+            path="/admin"
             element={
-              <RutaRol roles={['ADMIN']}>
-                <VistaTemporal titulo="Panel del Administrador" />
-              </RutaRol>
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AdminLayout />
+              </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<AdminInicio />} />
+            <Route path="usuarios" element={<AdminUsuarios />} />
+            <Route path="encuestas" element={<AdminEncuestas />} />
+          </Route>
 
           {/* Redirección por defecto */}
           <Route path="*" element={<Navigate to="/login" replace />} />

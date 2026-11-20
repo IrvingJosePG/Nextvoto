@@ -40,7 +40,7 @@ Aplicación web para gestionar procesos de votación y encuestas académicas o i
 
 ## 🔐 Credenciales de Prueba (Evaluación)
 
-Todas las cuentas de prueba cargadas automáticamente por Flyway (`V2__datos_prueba.sql`) comparten la contraseña **`NextVoto2026!`**:
+Las cuentas de prueba que instala Flyway en una base nueva usan la contraseña **`NextVoto2026!`**:
 
 | Rol | Correo Electrónico | Contraseña | Permisos |
 | :--- | :--- | :--- | :--- |
@@ -99,3 +99,13 @@ cd frontend
 npm install
 npm run dev
 ```
+
+## Panel de administración
+
+Inicia sesión con la cuenta de prueba del administrador para abrir `/admin`.
+
+- **Inicio** muestra usuarios registrados y activos, encuestas totales y abiertas, y votos emitidos. Cada participación completada cuenta como un voto, aunque la encuesta tenga varias preguntas.
+- **Usuarios** permite buscar cuentas, crear votantes o moderadores, cambiar el rol y suspender o reactivar. Las cuentas con votos emitidos o encuestas creadas se pueden suspender para conservar su historial.
+- **Encuestas y votaciones** muestra quién creó cada encuesta y cuántas personas ya votaron. El administrador puede cerrarla o eliminarla junto con sus votos.
+
+`AdminController` recibe las peticiones, `AdminService` aplica las reglas y los repositorios de Spring Data guardan los cambios en MySQL. Las tres vistas de React están en `frontend/src/pages/admin`.

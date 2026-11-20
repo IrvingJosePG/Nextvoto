@@ -51,6 +51,10 @@ public class Encuesta {
     @Builder.Default
     private List<Pregunta> preguntas = new ArrayList<>();
 
+    public boolean estaAbierta(LocalDateTime ahora) {
+        return Boolean.TRUE.equals(activa) && fechaLimite.isAfter(ahora);
+    }
+
     @PrePersist
     protected void onCreate() {
         if (this.creadoEn == null) this.creadoEn = LocalDateTime.now();

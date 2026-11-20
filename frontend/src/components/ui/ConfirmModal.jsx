@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 
 export const ConfirmModal = ({
@@ -8,16 +9,26 @@ export const ConfirmModal = ({
   cancelText = 'Revisar de Nuevo',
   variant = 'warning',
   isLoading = false,
+  error = '',
   onConfirm,
   onClose,
 }) => {
+  const tituloId = useId();
   if (!isOpen) return null;
 
   const esPeligro = variant === 'danger';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-      <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl max-w-lg w-full p-8 sm:p-10 text-center animate-in fade-in zoom-in-95 duration-150">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={tituloId}
+        onKeyDown={(evento) => {
+          if (evento.key === 'Escape' && !isLoading) onClose();
+        }}
+        className="bg-white border border-slate-200 rounded-3xl shadow-2xl max-w-lg w-full p-8 sm:p-10 text-center animate-in fade-in zoom-in-95 duration-150"
+      >
         {/* Ícono central grande estilo Figma */}
         <div className="flex justify-center">
           <div
@@ -32,7 +43,10 @@ export const ConfirmModal = ({
         </div>
 
         {/* Título centrado */}
-        <h3 className="text-2xl sm:text-[26px] font-extrabold text-slate-900 leading-tight mt-5">
+        <h3
+          id={tituloId}
+          className="text-2xl sm:text-[26px] font-extrabold text-slate-900 leading-tight mt-5"
+        >
           {title}
         </h3>
 
@@ -40,6 +54,12 @@ export const ConfirmModal = ({
         <p className="text-sm sm:text-base text-slate-600 mt-3 max-w-md mx-auto leading-relaxed">
           {message}
         </p>
+
+        {error && (
+          <p className="mt-3 text-sm font-medium text-rose-700" role="alert">
+            {error}
+          </p>
+        )}
 
         {/* Botones de acción centrados */}
         <div className="flex flex-col-reverse sm:flex-row items-center justify-center gap-3.5 mt-8">

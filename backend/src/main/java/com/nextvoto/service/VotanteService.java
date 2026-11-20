@@ -57,17 +57,26 @@ public class VotanteService {
     }
 
     private void validarEncuestaVigente(Encuesta encuesta) {
-        if (!Boolean.TRUE.equals(encuesta.getActiva()) || encuesta.getFechaLimite().isBefore(LocalDateTime.now())) {
+        if (!encuesta.estaAbierta(LocalDateTime.now())) {
             throw new BusinessException("Esta encuesta o votación ya se encuentra cerrada o ha expirado");
         }
     }
 
+    private Usuario usuarioParaParticipar(String email) {
+        Usuario usuario = usuarioRepository.buscarParaParticipar(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+        if (!usuario.getActivo()) {
+            throw new BusinessException("Tu cuenta se encuentra desactivada");
+        }
+        return usuario;
+    }
+
     @Transactional
     public ParticipacionDTO unirsePorPin(String email, UnirsePinRequest request) {
-        Usuario usuario = getUsuarioPorEmail(email);
+        Usuario usuario = usuarioParaParticipar(email);
         String pinNormalizado = request.getCodigoPin().trim().toUpperCase();
 
-        Encuesta encuesta = encuestaRepository.findByCodigoPin(pinNormalizado)
+        Encuesta encuesta = encuestaRepository.buscarParaUnirse(pinNormalizado)
                 .orElseThrow(() -> new ResourceNotFoundException("No se encontró ninguna encuesta con el PIN: " + pinNormalizado));
 
         validarEncuestaVigente(encuesta);
@@ -165,8 +174,8 @@ public class VotanteService {
 
     @Transactional
     public void emitirVoto(String email, Long idEncuesta, EnviarVotoRequest request) {
-        Usuario usuario = getUsuarioPorEmail(email);
-        Encuesta encuesta = encuestaRepository.findById(idEncuesta)
+        Usuario usuario = usuarioParaParticipar(email);
+        Encuesta encuesta = encuestaRepository.buscarParaVotar(idEncuesta)
                 .orElseThrow(() -> new ResourceNotFoundException("Encuesta no encontrada"));
 
         Participacion participacion = participacionRepository

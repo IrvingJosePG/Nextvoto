@@ -4,10 +4,11 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.Locale;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +27,6 @@ import com.nextvoto.exception.ResourceNotFoundException;
 import com.nextvoto.repository.RolRepository;
 import com.nextvoto.repository.TokenRepository;
 import com.nextvoto.repository.UsuarioRepository;
-import com.nextvoto.security.CustomUserDetailsService;
 import com.nextvoto.security.JwtService;
 
 import lombok.RequiredArgsConstructor;
@@ -43,7 +43,6 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    private final CustomUserDetailsService userDetailsService;
     private final NotificacionService notificacionService;
 
     public AuthResponse login(LoginRequest request) {
@@ -58,47 +57,48 @@ public class AuthService {
             throw new BusinessException("Tu cuenta se encuentra desactivada. Contacta al administrador.");
         }
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(usuario.getEmail());
-        String jwt = jwtService.generateToken(userDetails, usuario.getRol().getNombre(), usuario.getNombre());
-
-        return AuthResponse.builder()
-                .token(jwt)
-                .idUsuario(usuario.getIdUsuario())
-                .nombre(usuario.getNombre())
-                .email(usuario.getEmail())
-                .rol(usuario.getRol().getNombre())
-                .build();
+        return crearSesion(usuario);
     }
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (usuarioRepository.existsByEmail(request.getEmail())) {
+        return crearSesion(crearUsuario(request, "VOTANTE"));
+    }
+
+    Usuario crearUsuario(RegisterRequest request, String rol) {
+        String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
+        if (usuarioRepository.existsByEmail(email)) {
             throw new BusinessException("El correo electrónico ya está registrado");
         }
 
-        Rol rolVotante = rolRepository.findByNombre("VOTANTE")
-                .orElseThrow(() -> new ResourceNotFoundException("Rol VOTANTE no configurado en la base de datos"));
-
         Usuario nuevoUsuario = Usuario.builder()
                 .nombre(request.getNombre().trim())
-                .email(request.getEmail().trim().toLowerCase())
+                .email(email)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .telefono(request.getTelefono().trim())
                 .activo(true)
-                .rol(rolVotante)
+                .rol(buscarRol(rol))
                 .build();
 
-        Usuario guardado = usuarioRepository.save(nuevoUsuario);
+        try {
+            return usuarioRepository.saveAndFlush(nuevoUsuario);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException("El correo electrónico ya está registrado");
+        }
+    }
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(guardado.getEmail());
-        String jwt = jwtService.generateToken(userDetails, guardado.getRol().getNombre(), guardado.getNombre());
+    Rol buscarRol(String rol) {
+        return rolRepository.findByNombre(rol)
+                .orElseThrow(() -> new ResourceNotFoundException("Rol " + rol + " no configurado"));
+    }
 
+    private AuthResponse crearSesion(Usuario usuario) {
         return AuthResponse.builder()
-                .token(jwt)
-                .idUsuario(guardado.getIdUsuario())
-                .nombre(guardado.getNombre())
-                .email(guardado.getEmail())
-                .rol(guardado.getRol().getNombre())
+                .token(jwtService.generateToken(usuario))
+                .idUsuario(usuario.getIdUsuario())
+                .nombre(usuario.getNombre())
+                .email(usuario.getEmail())
+                .rol(usuario.getRol().getNombre())
                 .build();
     }
 
