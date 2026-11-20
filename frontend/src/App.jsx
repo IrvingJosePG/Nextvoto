@@ -1,19 +1,38 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './routes/ProtectedRoute';
-import { Navbar } from './components/Navbar';
 
+// Componentes de estructura
+import Sidebar from './components/Sidebar';
+import Topbar from './components/Topbar';
+
+// Vistas de Autenticación
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import RecuperarPassword from './pages/auth/RecuperarPassword';
 
+// Vistas del Módulo Votante
+import DashboardVotante from './pages/votante/DashboardVotante';
+import BoletaVotacion from './pages/votante/BoletaVotacion';
+import HistorialVotante from './pages/votante/HistorialVotante';
+import ResultadosVotante from './pages/votante/ResultadosVotante';
+
 const LayoutPrivado = ({ children }) => (
-  <div className="min-h-screen bg-fondo">
-    <Navbar />
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {children}
-    </main>
+  <div className="min-h-screen flex bg-[#f4f8fd]">
+    <Sidebar />
+    <div className="flex-1 flex flex-col min-w-0 pr-4 sm:pr-6">
+      <Topbar />
+      <main className="flex-1 px-4 sm:px-8 py-7">
+        {children}
+      </main>
+    </div>
   </div>
+);
+
+const RutaRol = ({ roles, children }) => (
+  <ProtectedRoute allowedRoles={roles}>
+    <LayoutPrivado>{children}</LayoutPrivado>
+  </ProtectedRoute>
 );
 
 const VistaTemporal = ({ titulo }) => (
@@ -39,11 +58,33 @@ export default function App() {
           <Route
             path="/votante"
             element={
-              <ProtectedRoute allowedRoles={['VOTANTE']}>
-                <LayoutPrivado>
-                  <VistaTemporal titulo="Panel del Votante (Siguiente paso)" />
-                </LayoutPrivado>
-              </ProtectedRoute>
+              <RutaRol roles={['VOTANTE']}>
+                <DashboardVotante />
+              </RutaRol>
+            }
+          />
+          <Route
+            path="/votante/encuestas/:id"
+            element={
+              <RutaRol roles={['VOTANTE']}>
+                <BoletaVotacion />
+              </RutaRol>
+            }
+          />
+          <Route
+            path="/votante/historial"
+            element={
+              <RutaRol roles={['VOTANTE']}>
+                <HistorialVotante />
+              </RutaRol>
+            }
+          />
+          <Route
+            path="/votante/encuestas/:id/resultados"
+            element={
+              <RutaRol roles={['VOTANTE']}>
+                <ResultadosVotante />
+              </RutaRol>
             }
           />
 
@@ -51,11 +92,9 @@ export default function App() {
           <Route
             path="/moderador/encuestas"
             element={
-              <ProtectedRoute allowedRoles={['MODERADOR']}>
-                <LayoutPrivado>
-                  <VistaTemporal titulo="Panel del Moderador" />
-                </LayoutPrivado>
-              </ProtectedRoute>
+              <RutaRol roles={['MODERADOR']}>
+                <VistaTemporal titulo="Panel del Moderador" />
+              </RutaRol>
             }
           />
 
@@ -63,11 +102,9 @@ export default function App() {
           <Route
             path="/admin/usuarios"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN']}>
-                <LayoutPrivado>
-                  <VistaTemporal titulo="Panel del Administrador" />
-                </LayoutPrivado>
-              </ProtectedRoute>
+              <RutaRol roles={['ADMIN']}>
+                <VistaTemporal titulo="Panel del Administrador" />
+              </RutaRol>
             }
           />
 
