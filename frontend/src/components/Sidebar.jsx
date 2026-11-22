@@ -73,6 +73,10 @@ export default function Sidebar() {
 
         {user.rol === 'MODERADOR' && (
           <>
+            <NavLink to="/moderador" end className={navItemClass}>
+              <Home className="w-5 h-5" />
+              <span>Inicio</span>
+            </NavLink>
             <NavLink to="/moderador/encuestas" className={navItemClass}>
               <BarChart3 className="w-5 h-5" />
               <span>Mis Encuestas</span>

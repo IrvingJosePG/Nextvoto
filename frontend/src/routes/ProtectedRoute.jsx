@@ -1,16 +1,18 @@
+
 import { Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const RUTA_POR_ROL = {
   ADMIN: '/admin',
-  MODERADOR: '/moderador/encuestas',
+  MODERADOR: '/moderador/inicio',
   VOTANTE: '/votante',
 };
 
 export const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
 
+  // Mientras se verifica la sesión
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-fondo">
@@ -22,12 +24,19 @@ export const ProtectedRoute = ({ children, allowedRoles }) => {
     );
   }
 
+  // Si no inició sesión, regresar al login
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
+  // Verificar permisos según el rol
   if (allowedRoles && !allowedRoles.includes(user.rol)) {
-    return <Navigate to={RUTA_POR_ROL[user.rol] || '/login'} replace />;
+    return (
+      <Navigate
+        to={RUTA_POR_ROL[user.rol] || '/login'}
+        replace
+      />
+    );
   }
 
   return children;
