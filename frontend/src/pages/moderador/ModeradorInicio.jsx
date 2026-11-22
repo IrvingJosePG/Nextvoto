@@ -13,7 +13,7 @@ const estadoDe = (e) => {
   return { texto: 'Abierta', variant: 'success' };
 };
 
-function ListaEncuestas({ titulo, vacio, items, onAbrir }) {
+function ListaEncuestas({ titulo, vacio, items, onAbrir, mostrarPin = false }) {
   return (
     <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xs border border-slate-100 flex-1 min-w-[300px]">
       <h2 className="text-lg font-extrabold text-slate-900 mb-4">{titulo}</h2>
@@ -32,6 +32,12 @@ function ListaEncuestas({ titulo, vacio, items, onAbrir }) {
                 >
                   <span>
                     <span className="block font-bold text-slate-900">{e.titulo}</span>
+                    {mostrarPin && (
+                      <span className="block text-xs text-slate-500 font-mono">
+                        PIN {e.codigoPin} · {e.participantes}{' '}
+                        {e.participantes === 1 ? 'voto' : 'votos'}
+                      </span>
+                    )}
                     <span className="block text-xs text-slate-500">
                       Cierra: {formatearFecha(e.fechaLimite)}
                     </span>
@@ -73,12 +79,17 @@ export default function ModeradorInicio() {
     cargar();
   }, []);
 
-  const proximas = encuestas
-    .filter((e) => e.abierta)
+  const abiertas = encuestas.filter((e) => e.abierta);
+
+  // Las 3 abiertas con la fecha de cierre más cercana
+  const proximas = [...abiertas]
     .sort((a, b) => new Date(a.fechaLimite) - new Date(b.fechaLimite))
     .slice(0, 3);
 
-  const recientes = [...encuestas].sort((a, b) => b.idEncuesta - a.idEncuesta).slice(0, 3);
+  // Las abiertas más recientes (con su PIN para compartirlo)
+  const abiertasRecientes = [...abiertas]
+    .sort((a, b) => b.idEncuesta - a.idEncuesta)
+    .slice(0, 5);
 
   const verResultados = (id) => navigate(`/moderador/encuestas/${id}/resultados`);
 
@@ -98,7 +109,7 @@ export default function ModeradorInicio() {
 
       {error && <p className="text-rose-600 font-semibold">{error}</p>}
 
-      <div className="flex flex-wrap gap-7">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 [&>div]:min-w-0 [&>div]:px-6 [&>div]:gap-4">
         <StatCard label={'Cuestionarios\nActivos'} value={resumen?.encuestasActivas ?? 0} color="amber" loading={loading} />
         <StatCard label={'Votos\nEmitidos'} value={resumen?.votosEmitidos ?? 0} color="emerald" loading={loading} />
         <StatCard label={'Tasa de\nParticipación'} value={`${resumen?.tasaParticipacion ?? 0}%`} color="rose" loading={loading} />
@@ -117,10 +128,11 @@ export default function ModeradorInicio() {
             onAbrir={verResultados}
           />
           <ListaEncuestas
-            titulo="Últimos creados"
-            vacio="Aún no has creado cuestionarios."
-            items={recientes}
+            titulo="Abiertas"
+            vacio="No tienes cuestionarios abiertos."
+            items={abiertasRecientes}
             onAbrir={verResultados}
+            mostrarPin
           />
         </div>
       )}
