@@ -1,7 +1,7 @@
 import { BarChart3, ClipboardList, LogOut, Users } from 'lucide-react';
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import logo from '../../assets/img/logo_nextvoto.png';
-import perfil from '../../assets/admin/perfil.svg';
+import Topbar from '../../components/Topbar';
 import { useAuth } from '../../context/AuthContext';
 import './admin.css';
 
@@ -12,10 +12,8 @@ const enlaces = [
 ];
 
 export default function AdminLayout() {
-  const { user, logout } = useAuth();
-  const { pathname } = useLocation();
+  const { logout } = useAuth();
   const navigate = useNavigate();
-  const seccion = enlaces.find(({ ruta }) => ruta === pathname) ?? enlaces[0];
 
   async function salir() {
     await logout();
@@ -42,14 +40,8 @@ export default function AdminLayout() {
           </button>
         </nav>
       </aside>
-      <div className="min-w-0">
-        <header className="admin-topbar">
-          <span>{seccion.texto}</span>
-          <span className="flex min-w-0 items-center gap-2">
-            <img src={perfil} alt="" className="shrink-0" />
-            <span className="truncate">{user.nombre}</span>
-          </span>
-        </header>
+      <div className="admin-workspace">
+        <Topbar />
         <main className="admin-content">
           <Outlet />
         </main>
