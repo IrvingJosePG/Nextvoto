@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './routes/ProtectedRoute';
@@ -27,7 +26,7 @@ import ResultadosVotante from './pages/votante/ResultadosVotante';
 // Vistas del Módulo Moderador
 import ModeradorInicio from './pages/moderador/ModeradorInicio';
 import ModeradorEncuestas from './pages/moderador/ModeradorEncuestas';
-import ModeradorAlumnos from './pages/moderador/ModeradorAlumnos';
+import ModeradorParticipantes from './pages/moderador/ModeradorParticipantes';
 import ModeradorMetricas from './pages/moderador/ModeradorMetricas';
 import ModeradorConfiguracion from './pages/moderador/ModeradorConfiguracion';
 import ModeradorCrear from './pages/moderador/ModeradorCrear';
@@ -102,63 +101,68 @@ export default function App() {
           />
 
           {/* RUTAS DEL MODERADOR */}
-          {/* RUTAS DEL MODERADOR */}
-<Route
-  path="/moderador"
-  element={
-    <RutaRol roles={['MODERADOR']}>
-      <ModeradorInicio />
-    </RutaRol>
-  }
-/>
-<Route
-  path="/moderador/encuestas"
-  element={
-    <RutaRol roles={['MODERADOR']}>
-      <ModeradorEncuestas />
-    </RutaRol>
-  }
-/>
-<Route
-  path="/moderador/alumnos"
-  element={
-    <RutaRol roles={['MODERADOR']}>
-      <ModeradorAlumnos />
-    </RutaRol>
-  }
-/>
-<Route
-  path="/moderador/metricas"
-  element={
-    <RutaRol roles={['MODERADOR']}>
-      <ModeradorMetricas />
-    </RutaRol>
-  }
-/>
-<Route
-  path="/moderador/configuracion"
-  element={
-    <RutaRol roles={['MODERADOR']}>
-      <ModeradorConfiguracion />
-    </RutaRol>
-  }
-/>
-<Route
-  path="/moderador/crear"
-  element={
-    <RutaRol roles={['MODERADOR']}>
-      <ModeradorCrear />
-    </RutaRol>
-  }
-/>
-<Route
-  path="/moderador/encuestas/:id/resultados"
-  element={
-    <RutaRol roles={['MODERADOR']}>
-      <ModeradorResultados />
-    </RutaRol>
-  }
-/>
+          <Route
+            path="/moderador"
+            element={
+              <RutaRol roles={['MODERADOR']}>
+                <ModeradorInicio />
+              </RutaRol>
+            }
+          />
+
+          <Route
+            path="/moderador/encuestas"
+            element={
+              <RutaRol roles={['MODERADOR']}>
+                <ModeradorEncuestas />
+              </RutaRol>
+            }
+          />
+
+          <Route
+            path="/moderador/participantes"
+            element={
+              <RutaRol roles={['MODERADOR']}>
+                <ModeradorParticipantes />
+              </RutaRol>
+            }
+          />
+
+          <Route
+            path="/moderador/metricas"
+            element={
+              <RutaRol roles={['MODERADOR']}>
+                <ModeradorMetricas />
+              </RutaRol>
+            }
+          />
+
+          <Route
+            path="/moderador/configuracion"
+            element={
+              <RutaRol roles={['MODERADOR']}>
+                <ModeradorConfiguracion />
+              </RutaRol>
+            }
+          />
+
+          <Route
+            path="/moderador/crear"
+            element={
+              <RutaRol roles={['MODERADOR']}>
+                <ModeradorCrear />
+              </RutaRol>
+            }
+          />
+
+          <Route
+            path="/moderador/encuestas/:id/resultados"
+            element={
+              <RutaRol roles={['MODERADOR']}>
+                <ModeradorResultados />
+              </RutaRol>
+            }
+          />
 
           {/* RUTAS DEL ADMINISTRADOR */}
           <Route
@@ -174,7 +178,7 @@ export default function App() {
             <Route path="encuestas" element={<AdminEncuestas />} />
           </Route>
 
-          {/* REDIRECCIÓN POR DEFECTO */}
+          
           <Route
             path="*"
             element={<Navigate to="/login" replace />}

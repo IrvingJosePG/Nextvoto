@@ -23,10 +23,13 @@ const PORTAL_POR_ROL = {
 const SECCION_POR_RUTA = {
   '/votante': 'Inicio',
   '/votante/historial': 'Resultados e Historial',
+  '/moderador': 'Inicio',
   '/moderador/encuestas': 'Mis Encuestas',
   '/moderador/crear': 'Crear Encuesta',
+  '/moderador/participantes': 'Participantes',
   '/admin/usuarios': 'Gestión de Usuarios',
   '/admin/encuestas': 'Supervisión Global',
+  '/moderador/metricas': 'Métricas y Resultados',
 };
 
 export default function Topbar() {

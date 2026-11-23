@@ -85,6 +85,14 @@ export default function Sidebar() {
               <PlusCircle className="w-5 h-5" />
               <span>Crear Encuesta</span>
             </NavLink>
+            <NavLink to="/moderador/participantes" className={navItemClass}>
+              <Users className="w-5 h-5" />
+              <span>Participantes</span>
+            </NavLink>
+            <NavLink to="/moderador/metricas" className={navItemClass}>
+              <ListChecks className="w-5 h-5" />
+              <span>Métricas</span>
+            </NavLink>
           </>
         )}
 

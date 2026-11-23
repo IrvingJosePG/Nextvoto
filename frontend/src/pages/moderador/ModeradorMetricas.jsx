@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, Filter, RotateCcw, PlusCircle } from 'lucide-react';
+import { Filter, Loader2, PlusCircle, RotateCcw } from 'lucide-react';
 import api from '../../api/axiosConfig';
 import { Badge } from '../../components/ui';
+import TarjetaGrafica from '../../components/moderador/TarjetaGrafica';
 
 const ORDENES = [
   { valor: 'RECIENTES', texto: 'Más recientes' },
@@ -15,6 +16,12 @@ const ESTADOS = [
   { valor: 'ABIERTA', texto: 'Abiertas' },
   { valor: 'VENCIDA', texto: 'Vencidas' },
   { valor: 'CERRADA', texto: 'Cerradas' },
+];
+
+const TIPOS = [
+  { valor: 'TODOS', texto: 'Todos los tipos' },
+  { valor: 'VOTACION', texto: 'Votaciones' },
+  { valor: 'ENCUESTA', texto: 'Encuestas' },
 ];
 
 const estadoDe = (e) => {
@@ -34,94 +41,23 @@ const lineaFecha = (e) => {
 const selectClase =
   'px-4 py-2 border border-slate-300 rounded-full text-sm bg-white text-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20';
 
-// Gráfica de barras verticales (tarjeta "Elección activa")
-function BarrasVerticales({ data }) {
-  const pregunta = data?.preguntas?.[0];
-  const opciones = pregunta?.opciones ?? [];
-  const maxVotos = Math.max(...opciones.map((o) => o.votos), 0);
-  const etiqueta = data?.tipo === 'VOTACION' ? 'Elección activa' : 'Encuesta activa';
-
-  return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xs border border-slate-100 flex-1 min-w-[300px]">
-      <h2 className="text-lg font-extrabold text-slate-900">{data ? etiqueta : 'Sin cuestionario activo'}</h2>
-      <p className="text-xs text-slate-500 mb-5">{pregunta?.texto ?? 'Cuando tengas uno abierto aparecerá aquí.'}</p>
-      <div className="flex items-end gap-3 h-40">
-        {opciones.map((op) => (
-          <div key={op.idOpcion} className="flex-1 flex flex-col items-center justify-end h-full min-w-0">
-            <div
-              style={{ height: `${Math.max(op.porcentaje, 3)}%` }}
-              className={`w-full rounded-t-lg transition-all duration-500 ${
-                maxVotos > 0 && op.votos === maxVotos ? 'bg-blue-600' : 'bg-[#dbe7fb]'
-              }`}
-            />
-            <span title={op.texto} className="mt-2 text-[10px] text-slate-600 truncate w-full text-center">
-              {op.texto}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// Gráfica de barras horizontales (tarjeta "Terminada")
-function BarrasHorizontales({ data }) {
-  const pregunta = data?.preguntas?.[0];
-  const opciones = pregunta?.opciones ?? [];
-  const maxVotos = Math.max(...opciones.map((o) => o.votos), 0);
-
-  return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xs border border-slate-100 flex-1 min-w-[300px]">
-      <h2 className="text-lg font-extrabold text-slate-900">{data ? 'Terminada' : 'Sin cuestionarios terminados'}</h2>
-      <p className="text-xs text-slate-500 mb-5">{pregunta?.texto ?? 'Aquí verás el último que se cierre o venza.'}</p>
-      <ul className="space-y-3">
-        {opciones.map((op) => (
-          <li key={op.idOpcion} className="flex items-center gap-3">
-            <span title={op.texto} className="w-24 text-xs text-slate-600 truncate">{op.texto}</span>
-            <div className="flex-1 h-4 rounded-full bg-[#eef3fb] overflow-hidden">
-              <div
-                style={{ width: `${op.porcentaje}%` }}
-                className={`h-full rounded-full transition-all duration-500 ${
-                  maxVotos > 0 && op.votos === maxVotos ? 'bg-blue-600' : 'bg-[#bcd0f5]'
-                }`}
-              />
-            </div>
-            <span className="w-10 text-xs font-bold text-slate-700 text-right">{Math.round(op.porcentaje)}%</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 export default function ModeradorMetricas() {
   const navigate = useNavigate();
 
   const [encuestas, setEncuestas] = useState([]);
-  const [activa, setActiva] = useState(null);
-  const [terminada, setTerminada] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [orden, setOrden] = useState('RECIENTES');
+
+  const [busqueda, setBusqueda] = useState('');
+  const [tipo, setTipo] = useState('TODOS');
   const [estadoFiltro, setEstadoFiltro] = useState('TODOS');
+  const [orden, setOrden] = useState('RECIENTES');
 
   useEffect(() => {
     const cargar = async () => {
       try {
         const { data } = await api.get('/moderador/encuestas');
-        const lista = Array.isArray(data) ? data : [];
-        setEncuestas(lista);
-
-        // Las dos gráficas de arriba usan el cuestionario abierto y el terminado más recientes
-        const recientes = [...lista].sort((a, b) => b.idEncuesta - a.idEncuesta);
-        const abierta = recientes.find((e) => e.abierta);
-        const cerrada = recientes.find((e) => !e.abierta);
-        const [ra, rt] = await Promise.all([
-          abierta ? api.get(`/moderador/encuestas/${abierta.idEncuesta}/resultados`) : null,
-          cerrada ? api.get(`/moderador/encuestas/${cerrada.idEncuesta}/resultados`) : null,
-        ]);
-        setActiva(ra?.data ?? null);
-        setTerminada(rt?.data ?? null);
+        setEncuestas(Array.isArray(data) ? data : []);
       } catch (err) {
         setError(err.response?.data?.message || 'No se pudieron cargar las métricas.');
       } finally {
@@ -131,18 +67,40 @@ export default function ModeradorMetricas() {
     cargar();
   }, []);
 
-  const limpiarFiltros = () => {
-    setOrden('RECIENTES');
-    setEstadoFiltro('TODOS');
-  };
+  const recientes = useMemo(
+    () => [...encuestas].sort((a, b) => b.idEncuesta - a.idEncuesta),
+    [encuestas]
+  );
+  const abiertas = recientes.filter((e) => e.abierta);
+  const terminadas = recientes.filter((e) => !e.abierta);
 
-  const visibles = encuestas
-    .filter((e) => estadoFiltro === 'TODOS' || estadoDe(e).clave === estadoFiltro)
-    .sort((a, b) => {
-      if (orden === 'ANTIGUAS') return a.idEncuesta - b.idEncuesta;
-      if (orden === 'VOTOS') return b.participantes - a.participantes;
-      return b.idEncuesta - a.idEncuesta;
-    });
+  const texto = busqueda.trim().toLocaleLowerCase('es-MX');
+
+  const visibles = useMemo(() => {
+    return encuestas
+      .filter((e) => tipo === 'TODOS' || e.tipo === tipo)
+      .filter((e) => estadoFiltro === 'TODOS' || estadoDe(e).clave === estadoFiltro)
+      .filter(
+        (e) =>
+          !texto ||
+          e.titulo.toLocaleLowerCase('es-MX').includes(texto) ||
+          e.codigoPin.toLocaleLowerCase('es-MX').includes(texto)
+      )
+      .sort((a, b) => {
+        if (orden === 'ANTIGUAS') return a.idEncuesta - b.idEncuesta;
+        if (orden === 'VOTOS') return b.participantes - a.participantes;
+        return b.idEncuesta - a.idEncuesta;
+      });
+  }, [encuestas, tipo, estadoFiltro, texto, orden]);
+
+  const hayFiltros = busqueda !== '' || tipo !== 'TODOS' || estadoFiltro !== 'TODOS' || orden !== 'RECIENTES';
+
+  const limpiarFiltros = () => {
+    setBusqueda('');
+    setTipo('TODOS');
+    setEstadoFiltro('TODOS');
+    setOrden('RECIENTES');
+  };
 
   if (loading) {
     return (
@@ -154,15 +112,34 @@ export default function ModeradorMetricas() {
 
   return (
     <div className="max-w-6xl space-y-8">
-      <h1 className="text-3xl sm:text-4xl font-extrabold text-blue-700 tracking-tight">
-        Métricas y Resultados
-      </h1>
+      <div>
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-blue-700 tracking-tight">
+          Métricas y Resultados
+        </h1>
+        <p className="text-sm text-slate-500 mt-1">
+          Elige un cuestionario en cada gráfica para ver cómo van las votaciones.
+        </p>
+      </div>
 
       {error && <p className="text-rose-600 font-semibold">{error}</p>}
 
       <div className="flex flex-wrap gap-6">
-        <BarrasVerticales data={activa} />
-        <BarrasHorizontales data={terminada} />
+        <TarjetaGrafica
+          key={`abiertas-${abiertas.length}`}
+          titulo="Cuestionario activo"
+          lista={abiertas}
+          orientacion="vertical"
+          vacioTitulo="Sin cuestionario activo"
+          vacioTexto="Cuando tengas uno abierto aparecerá aquí."
+        />
+        <TarjetaGrafica
+          key={`terminadas-${terminadas.length}`}
+          titulo="Terminado"
+          lista={terminadas}
+          orientacion="horizontal"
+          vacioTitulo="Sin cuestionarios terminados"
+          vacioTexto="Aquí verás los que se cierren o venzan."
+        />
       </div>
 
       <h2 className="text-2xl font-extrabold text-slate-900">Resultados</h2>
@@ -171,23 +148,44 @@ export default function ModeradorMetricas() {
         <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
           <Filter className="w-4 h-4" /> Filtrar por:
         </span>
-        <select value={orden} onChange={(ev) => setOrden(ev.target.value)} className={selectClase}>
-          {ORDENES.map((o) => (
+
+        <input
+          type="search"
+          value={busqueda}
+          onChange={(ev) => setBusqueda(ev.target.value)}
+          placeholder="Título o PIN"
+          aria-label="Buscar por título o PIN"
+          className="px-4 py-2 rounded-full text-sm bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-slate-400 w-full sm:w-48 outline-none focus:ring-2 focus:ring-blue-500/20"
+        />
+
+        <select value={tipo} onChange={(ev) => setTipo(ev.target.value)} aria-label="Tipo" className={selectClase}>
+          {TIPOS.map((o) => (
             <option key={o.valor} value={o.valor}>{o.texto}</option>
           ))}
         </select>
-        <select value={estadoFiltro} onChange={(ev) => setEstadoFiltro(ev.target.value)} className={selectClase}>
+
+        <select value={estadoFiltro} onChange={(ev) => setEstadoFiltro(ev.target.value)} aria-label="Estado" className={selectClase}>
           {ESTADOS.map((o) => (
             <option key={o.valor} value={o.valor}>{o.texto}</option>
           ))}
         </select>
-        <button
-          type="button"
-          onClick={limpiarFiltros}
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700 hover:text-blue-900 cursor-pointer"
-        >
-          <RotateCcw className="w-4 h-4" /> Limpiar filtros
-        </button>
+
+        <select value={orden} onChange={(ev) => setOrden(ev.target.value)} aria-label="Orden" className={selectClase}>
+          {ORDENES.map((o) => (
+            <option key={o.valor} value={o.valor}>{o.texto}</option>
+          ))}
+        </select>
+
+        {hayFiltros && (
+          <button
+            type="button"
+            onClick={limpiarFiltros}
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700 hover:text-blue-900 cursor-pointer"
+          >
+            <RotateCcw className="w-4 h-4" /> Limpiar filtros
+          </button>
+        )}
+
         <button
           type="button"
           onClick={() => navigate('/moderador/crear')}
@@ -203,8 +201,10 @@ export default function ModeradorMetricas() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {visibles.map((e) => {
             const estado = estadoDe(e);
-            const total = e.maxParticipantes ?? e.participantes + (e.pendientes ?? 0);
+            const total = e.participantes + (e.pendientes ?? 0);
+            const avance = total > 0 ? Math.round((e.participantes / total) * 100) : 0;
             const tipoTexto = e.tipo === 'VOTACION' ? 'Votación' : 'Encuesta';
+
             return (
               <div
                 key={e.idEncuesta}
@@ -214,9 +214,20 @@ export default function ModeradorMetricas() {
                 <Badge variant={estado.variant}>
                   {tipoTexto} {estado.sufijo}
                 </Badge>
-                <p className="text-sm font-semibold text-slate-700">
-                  Participaron: {e.participantes}/{total}
-                </p>
+                <p className="text-xs text-slate-500 font-mono">PIN {e.codigoPin}</p>
+
+                <div>
+                  <p className="text-sm font-semibold text-slate-700">
+                    Participaron: {e.participantes}/{total}
+                  </p>
+                  <div className="mt-2 h-2 rounded-full bg-[#eef3fb] overflow-hidden">
+                    <div
+                      style={{ width: `${avance}%` }}
+                      className="h-full rounded-full bg-blue-600 transition-all duration-500"
+                    />
+                  </div>
+                </div>
+
                 <p className="text-sm text-slate-500">{lineaFecha(e)}</p>
                 <button
                   type="button"
