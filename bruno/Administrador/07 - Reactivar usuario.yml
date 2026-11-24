@@ -1,0 +1,33 @@
+info:
+  name: 07 - Reactivar usuario
+  type: http
+  seq: 7
+http:
+  method: PATCH
+  url: '{{baseUrl}}/api/admin/usuarios/{{idUsuarioPrueba}}/estado'
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "activo": true
+      }
+  auth:
+    type: bearer
+    token: '{{tokenAdmin}}'
+runtime:
+  scripts:
+  - type: tests
+    code: |-
+      test("HTTP 204", function () {
+        expect(res.getStatus()).to.equal(204);
+      });
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+docs: |-
+  Reactiva solamente el usuario creado en la petición 04.

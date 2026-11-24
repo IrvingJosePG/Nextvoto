@@ -1,0 +1,24 @@
+info:
+  name: 09 - Cerrar encuesta MANUAL
+  type: http
+  seq: 9
+http:
+  method: PATCH
+  url: '{{baseUrl}}/api/admin/encuestas/{{idEncuestaPrueba}}/cerrar'
+  auth:
+    type: bearer
+    token: '{{tokenAdmin}}'
+runtime:
+  scripts:
+  - type: tests
+    code: |-
+      test("HTTP 204", function () {
+        expect(res.getStatus()).to.equal(204);
+      });
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+docs: |-
+  PELIGRO: cambia activa=false en una encuesta real. La variable idEncuestaPrueba vale 0 por seguridad; cámbiala manualmente por una encuesta de prueba después de respaldar tu BD. Si queda en 0, se espera HTTP 404 y la prueba 204 fallará (intencional). No existe endpoint para reabrir.

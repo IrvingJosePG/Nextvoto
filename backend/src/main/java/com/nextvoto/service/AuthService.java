@@ -1,10 +1,15 @@
 package com.nextvoto.service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.HexFormat;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -44,6 +49,10 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final NotificacionService notificacionService;
+
+    // 12 caracteres de un alfabeto de 32 símbolos = 60 bits de entropía.
+    private static final String ALFABETO_CODIGO = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    private static final SecureRandom ALEATORIO_SEGURO = new SecureRandom();
 
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(
@@ -127,7 +136,7 @@ public class AuthService {
     }
 
     @Transactional
-    public String solicitarRecuperacion(RecuperarPasswordRequest request) {
+    public void solicitarRecuperacion(RecuperarPasswordRequest request) {
         boolean tieneEmail = request.getEmail() != null && !request.getEmail().isBlank();
         boolean tieneTelefono = request.getTelefono() != null && !request.getTelefono().isBlank();
 
@@ -135,46 +144,72 @@ public class AuthService {
             throw new BusinessException("Debes proporcionar un correo electrónico o un número telefónico");
         }
 
-        Usuario usuario;
+        Optional<Usuario> usuarioOpcional;
         if (tieneEmail) {
-            usuario = usuarioRepository.findByEmail(request.getEmail().trim().toLowerCase())
-                    .orElseThrow(() -> new ResourceNotFoundException("No existe una cuenta asociada a ese correo electrónico"));
+            String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
+            usuarioOpcional = usuarioRepository.findByEmail(email);
         } else {
             String telLimpio = request.getTelefono().replaceAll("\\s+", "");
-            usuario = usuarioRepository.findByTelefono(telLimpio)
-                    .or(() -> usuarioRepository.findByTelefono("+52" + telLimpio))
-                    .orElseThrow(() -> new ResourceNotFoundException("No existe una cuenta asociada a ese número telefónico"));
+            usuarioOpcional = usuarioRepository.findByTelefono(telLimpio)
+                    .or(() -> usuarioRepository.findByTelefono("+52" + telLimpio));
         }
 
-        String codigoRecuperacion = String.format("%06d", new SecureRandom().nextInt(1_000_000));
+        // Respuesta indistinguible para cuentas registradas y no registradas.
+        if (usuarioOpcional.isEmpty()) {
+            return;
+        }
 
+        Usuario usuario = usuarioOpcional.get();
+        String codigoRecuperacion = generarCodigoSeguro();
+
+        // Revoca códigos anteriores y almacena únicamente el hash del nuevo código.
+        tokenRepository.deleteByUsuarioAndTipo(usuario, TipoToken.RECUPERACION);
         Token tokenRec = Token.builder()
-                .token(codigoRecuperacion)
+                .token(hashCodigo(codigoRecuperacion))
                 .tipo(TipoToken.RECUPERACION)
                 .expiracion(LocalDateTime.now().plusMinutes(15))
                 .usuario(usuario)
                 .build();
-        tokenRepository.save(tokenRec);
+        tokenRepository.saveAndFlush(tokenRec);
 
         if (tieneEmail) {
             notificacionService.enviarPinCorreo(usuario.getEmail(), usuario.getNombre(), codigoRecuperacion);
         } else {
             notificacionService.enviarPinWhatsApp(usuario.getTelefono(), usuario.getNombre(), codigoRecuperacion);
         }
-
-        return codigoRecuperacion;
     }
 
     @Transactional
     public void restablecerPassword(RestablecerPasswordRequest request) {
+        String codigo = request.getToken().trim().toUpperCase(Locale.ROOT);
         Token tokenValido = tokenRepository
-                .findByTokenAndTipoAndExpiracionAfter(request.getToken().trim(), TipoToken.RECUPERACION, LocalDateTime.now())
+                .findByTokenAndTipoAndExpiracionAfter(
+                        hashCodigo(codigo), TipoToken.RECUPERACION, LocalDateTime.now())
                 .orElseThrow(() -> new BusinessException("El código de recuperación es inválido o ha expirado"));
 
         Usuario usuario = tokenValido.getUsuario();
         usuario.setPassword(passwordEncoder.encode(request.getNuevaPassword()));
         usuarioRepository.save(usuario);
 
-        tokenRepository.delete(tokenValido);
+        // El código es de un solo uso. También se invalidan los anteriores.
+        tokenRepository.deleteByUsuarioAndTipo(usuario, TipoToken.RECUPERACION);
+    }
+
+    private String generarCodigoSeguro() {
+        StringBuilder codigo = new StringBuilder(12);
+        for (int i = 0; i < 12; i++) {
+            codigo.append(ALFABETO_CODIGO.charAt(ALEATORIO_SEGURO.nextInt(ALFABETO_CODIGO.length())));
+        }
+        return codigo.toString();
+    }
+
+    private String hashCodigo(String codigo) {
+        try {
+            byte[] hash = MessageDigest.getInstance("SHA-256")
+                    .digest(codigo.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 no está disponible", e);
+        }
     }
 }

@@ -1,0 +1,37 @@
+info:
+  name: 12 - Correo duplicado devuelve 422
+  type: http
+  seq: 12
+http:
+  method: POST
+  url: '{{baseUrl}}/api/admin/usuarios'
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Usuario de prueba duplicado",
+        "email": "{{correoUsuarioPrueba}}",
+        "password": "Prueba2026!",
+        "telefono": "+529511234567",
+        "rol": "VOTANTE"
+      }
+  auth:
+    type: bearer
+    token: '{{tokenAdmin}}'
+runtime:
+  scripts:
+  - type: tests
+    code: |-
+      test("HTTP 422", function () {
+        expect(res.getStatus()).to.equal(422);
+      });
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+docs: |-
+  Prueba negativa: intenta volver a crear el mismo correo de la petición 04 (sin regenerarlo). Debe devolver 422. Ejecutar antes de eliminar al usuario creado.

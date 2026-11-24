@@ -1,0 +1,33 @@
+info:
+  name: 05 - Cambiar rol a MODERADOR
+  type: http
+  seq: 5
+http:
+  method: PATCH
+  url: '{{baseUrl}}/api/admin/usuarios/{{idUsuarioPrueba}}/rol'
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "rol": "MODERADOR"
+      }
+  auth:
+    type: bearer
+    token: '{{tokenAdmin}}'
+runtime:
+  scripts:
+  - type: tests
+    code: |-
+      test("HTTP 204", function () {
+        expect(res.getStatus()).to.equal(204);
+      });
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+docs: |-
+  Modifica el rol del usuario creado en la petición 04. Responde HTTP 204 sin cuerpo. El backend solo permite VOTANTE o MODERADOR, no ADMIN.

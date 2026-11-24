@@ -1,0 +1,33 @@
+info:
+  name: 06 - Desactivar usuario
+  type: http
+  seq: 6
+http:
+  method: PATCH
+  url: '{{baseUrl}}/api/admin/usuarios/{{idUsuarioPrueba}}/estado'
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "activo": false
+      }
+  auth:
+    type: bearer
+    token: '{{tokenAdmin}}'
+runtime:
+  scripts:
+  - type: tests
+    code: |-
+      test("HTTP 204", function () {
+        expect(res.getStatus()).to.equal(204);
+      });
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+docs: |-
+  Desactiva solamente el usuario creado en la petición 04. El backend evita modificar al propio administrador.

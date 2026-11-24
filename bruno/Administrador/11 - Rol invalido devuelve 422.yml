@@ -1,0 +1,33 @@
+info:
+  name: 11 - Rol invalido devuelve 422
+  type: http
+  seq: 11
+http:
+  method: PATCH
+  url: '{{baseUrl}}/api/admin/usuarios/{{idUsuarioPrueba}}/rol'
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "rol": "ADMIN"
+      }
+  auth:
+    type: bearer
+    token: '{{tokenAdmin}}'
+runtime:
+  scripts:
+  - type: tests
+    code: |-
+      test("HTTP 422", function () {
+        expect(res.getStatus()).to.equal(422);
+      });
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+docs: |-
+  Prueba negativa: no se permite promover a otro usuario a ADMIN desde este endpoint. Debe devolver 422 por BusinessException.

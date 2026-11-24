@@ -1,0 +1,56 @@
+info:
+  name: 04 - Crear usuario de prueba
+  type: http
+  seq: 4
+http:
+  method: POST
+  url: '{{baseUrl}}/api/admin/usuarios'
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Usuario de prueba Bruno",
+        "email": "{{correoUsuarioPrueba}}",
+        "password": "Prueba2026!",
+        "telefono": "+529511234567",
+        "rol": "VOTANTE"
+      }
+  auth:
+    type: bearer
+    token: '{{tokenAdmin}}'
+runtime:
+  scripts:
+  - type: before-request
+    code: |-
+      // Correo único de prueba sin depender de otros registros.
+      const sufijo = Date.now() + '-' + Math.floor(Math.random() * 100000);
+      bru.setVar('correoUsuarioPrueba', `bruno.${sufijo}@example.test`);
+  - type: after-response
+    code: |-
+      if (res.getStatus() === 201) {
+        const usuario = res.getBody();
+        if (usuario && usuario.idUsuario) {
+          // Las siguientes pruebas solo afectan al usuario recién creado.
+          bru.setVar('idUsuarioPrueba', String(usuario.idUsuario));
+        }
+      }
+  - type: tests
+    code: |-
+      test("HTTP 201", function () {
+        expect(res.getStatus()).to.equal(201);
+      });
+      test("Se creó un usuario VOTANTE con ID", function () {
+        const r = res.getBody();
+        expect(r.idUsuario).to.be.a('number');
+        expect(r.rol).to.equal('VOTANTE');
+      });
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+docs: |-
+  Crea un usuario VOTANTE con un correo único generado por un script. Se guarda su idUsuario en memoria como idUsuarioPrueba. Ejecutar antes de PATCH/DELETE de usuario.

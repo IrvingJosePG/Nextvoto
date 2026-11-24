@@ -196,7 +196,7 @@ export default function RecuperarPassword() {
                   setCodigo(e.target.value);
                   if (fieldErrors.token) setFieldErrors((prev) => ({ ...prev, token: '' }));
                 }}
-                placeholder="Ej. 482910"
+                placeholder="Código de 12 caracteres"
                 error={fieldErrors.token}
               />
 
