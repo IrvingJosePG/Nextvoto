@@ -62,8 +62,8 @@ export default function RecuperarPassword() {
     setIsLoading(true);
     try {
       await api.post('/auth/restablecer', {
-        email: email.trim(),
-        codigo: codigo.trim(),
+        // El DTO del backend requiere "token", no "codigo".
+        token: codigo.trim(),
         nuevaPassword,
       });
       navigate('/login', { replace: true });
@@ -138,7 +138,7 @@ export default function RecuperarPassword() {
                 type="text"
                 value={codigo}
                 onChange={(e) => setCodigo(e.target.value)}
-                placeholder="Ej. 482910"
+                placeholder="Código recibido por correo"
                 error={fieldErrors.codigo}
               />
 
