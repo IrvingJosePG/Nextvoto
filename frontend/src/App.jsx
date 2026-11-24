@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './routes/ProtectedRoute';
@@ -33,17 +34,29 @@ import ModeradorCrear from './pages/moderador/ModeradorCrear';
 import ModeradorResultados from './pages/moderador/ModeradorResultados';
 
 // Layout privado
-const LayoutPrivado = ({ children }) => (
-  <div className="min-h-screen flex bg-[#f4f8fd]">
-    <Sidebar />
-    <div className="flex-1 flex flex-col min-w-0 pr-4 sm:pr-6">
-      <Topbar />
-      <main className="flex-1 px-4 sm:px-8 py-7">
-        {children}
-      </main>
+const LayoutPrivado = ({ children }) => {
+  const [menuAbierto, setMenuAbierto] = useState(
+    () => localStorage.getItem('nextvoto_menu') !== 'cerrado'
+  );
+
+  const alternarMenu = () => {
+    const nuevo = !menuAbierto;
+    setMenuAbierto(nuevo);
+    localStorage.setItem('nextvoto_menu', nuevo ? 'abierto' : 'cerrado');
+  };
+
+  return (
+    <div className="min-h-screen flex bg-[#f4f8fd]">
+      <Sidebar abierto={menuAbierto} />
+      <div className="flex-1 flex flex-col min-w-0 pr-4 sm:pr-6">
+        <Topbar menuLateralAbierto={menuAbierto} onToggleMenu={alternarMenu} />
+        <main className="flex-1 px-4 sm:px-8 py-7">
+          {children}
+        </main>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Protección de rutas según el rol
 const RutaRol = ({ roles, children }) => (
@@ -178,7 +191,7 @@ export default function App() {
             <Route path="encuestas" element={<AdminEncuestas />} />
           </Route>
 
-          
+          {/* REDIRECCIÓN POR DEFECTO */}
           <Route
             path="*"
             element={<Navigate to="/login" replace />}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
+  Menu,
   ChevronRight,
   ChevronDown,
   UserCircle2,
@@ -27,12 +28,13 @@ const SECCION_POR_RUTA = {
   '/moderador/encuestas': 'Mis Encuestas',
   '/moderador/crear': 'Crear Encuesta',
   '/moderador/participantes': 'Participantes',
+  '/moderador/metricas': 'Métricas y Resultados',
+  '/moderador/configuracion': 'Configuración',
   '/admin/usuarios': 'Gestión de Usuarios',
   '/admin/encuestas': 'Supervisión Global',
-  '/moderador/metricas': 'Métricas y Resultados',
 };
 
-export default function Topbar() {
+export default function Topbar({ menuLateralAbierto = true, onToggleMenu = () => {} }) {
   const { user, logout } = useAuth();
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -71,11 +73,24 @@ export default function Topbar() {
   return (
     <>
       <header className="bg-[#dbeafe] rounded-b-3xl px-6 sm:px-8 py-3.5 flex items-center justify-between shadow-2xs relative z-20">
-        {/* Breadcrumb profesional */}
-        <div className="flex items-center gap-2 text-base">
-          <span className="font-medium text-blue-800/75 hidden sm:inline">{portal}</span>
-          <ChevronRight className="w-4 h-4 text-blue-800/50 hidden sm:inline" />
-          <span className="font-bold text-slate-900 tracking-tight">{seccion}</span>
+        <div className="flex items-center gap-3">
+          {/* Botón de hamburguesa: abre y cierra el menú lateral */}
+          <button
+            type="button"
+            onClick={onToggleMenu}
+            aria-label={menuLateralAbierto ? 'Ocultar menú lateral' : 'Mostrar menú lateral'}
+            aria-expanded={menuLateralAbierto}
+            className="p-2 -ml-2 rounded-xl text-blue-800 hover:bg-blue-200/60 transition-colors cursor-pointer"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          {/* Breadcrumb profesional */}
+          <div className="flex items-center gap-2 text-base">
+            <span className="font-medium text-blue-800/75 hidden sm:inline">{portal}</span>
+            <ChevronRight className="w-4 h-4 text-blue-800/50 hidden sm:inline" />
+            <span className="font-bold text-slate-900 tracking-tight">{seccion}</span>
+          </div>
         </div>
 
         {/* Menú desplegable de usuario */}
