@@ -1,12 +1,18 @@
 package com.nextvoto.service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.HexFormat;
 import java.util.Locale;
-import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,6 +20,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import com.nextvoto.dto.auth.AuthResponse;
 import com.nextvoto.dto.auth.LoginRequest;
@@ -46,6 +53,13 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final JavaMailSender mailSender;
+
+    @Value("${app.mail.from:no-reply@nextvoto.com}")
+    private String remitenteCorreo;
+
+    // 12 caracteres de un alfabeto de 32 símbolos = 60 bits de entropía.
+    private static final String ALFABETO_CODIGO = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    private static final SecureRandom ALEATORIO_SEGURO = new SecureRandom();
 
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(
@@ -129,46 +143,76 @@ public class AuthService {
     }
 
     @Transactional
-    public String solicitarRecuperacion(RecuperarPasswordRequest request) {
-        Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("No existe una cuenta asociada a ese correo"));
+    public void solicitarRecuperacion(RecuperarPasswordRequest request) {
+        String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
+        var usuarioOpcional = usuarioRepository.findByEmail(email);
 
-        String codigoRecuperacion = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        // Respuesta indistinguible para correos registrados y no registrados.
+        if (usuarioOpcional.isEmpty()) {
+            return;
+        }
 
+        Usuario usuario = usuarioOpcional.get();
+        String codigoRecuperacion = generarCodigoSeguro();
+
+        // Revoca códigos anteriores y almacena únicamente el hash del nuevo código.
+        tokenRepository.deleteByUsuarioAndTipo(usuario, TipoToken.RECUPERACION);
         Token tokenRec = Token.builder()
-                .token(codigoRecuperacion)
+                .token(hashCodigo(codigoRecuperacion))
                 .tipo(TipoToken.RECUPERACION)
                 .expiracion(LocalDateTime.now().plusMinutes(15))
                 .usuario(usuario)
                 .build();
-        tokenRepository.save(tokenRec);
+        tokenRepository.saveAndFlush(tokenRec);
 
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("no-reply@nextvoto.com");
+            message.setFrom(remitenteCorreo);
             message.setTo(usuario.getEmail());
             message.setSubject("Recuperación de contraseña - NextVoto");
-            message.setText("Hola " + usuario.getNombre() + ",\n\nTu código de recuperación es: " + codigoRecuperacion +
-                    "\nEste código expira en 15 minutos.");
+            message.setText("Hola " + usuario.getNombre()
+                    + ",\n\nTu código de recuperación es: " + codigoRecuperacion
+                    + "\nEste código expira en 15 minutos. Si no lo solicitaste, ignora este correo.");
             mailSender.send(message);
-        } catch (Exception e) {
-            log.warn("No se pudo enviar correo SMTP en entorno local. Código generado para {}: {}", usuario.getEmail(), codigoRecuperacion);
+        } catch (MailException e) {
+            // Si el SMTP falla, NO conservar un código no entregado y NO mostrarlo en logs.
+            log.warn("No se pudo enviar el correo de recuperación (revisar SMTP): {}",
+                    e.getClass().getSimpleName());
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
         }
-
-        return codigoRecuperacion;
     }
 
     @Transactional
     public void restablecerPassword(RestablecerPasswordRequest request) {
+        String codigo = request.getToken().trim().toUpperCase(Locale.ROOT);
         Token tokenValido = tokenRepository
-                .findByTokenAndTipoAndExpiracionAfter(request.getToken().trim(), TipoToken.RECUPERACION, LocalDateTime.now())
+                .findByTokenAndTipoAndExpiracionAfter(
+                        hashCodigo(codigo), TipoToken.RECUPERACION, LocalDateTime.now())
                 .orElseThrow(() -> new BusinessException("El código de recuperación es inválido o ha expirado"));
 
         Usuario usuario = tokenValido.getUsuario();
         usuario.setPassword(passwordEncoder.encode(request.getNuevaPassword()));
         usuarioRepository.save(usuario);
 
-        // Invalidar el token usado eliminándolo
-        tokenRepository.delete(tokenValido);
+        // El código es de un solo uso. También se invalidan los anteriores.
+        tokenRepository.deleteByUsuarioAndTipo(usuario, TipoToken.RECUPERACION);
+    }
+
+    private String generarCodigoSeguro() {
+        StringBuilder codigo = new StringBuilder(12);
+        for (int i = 0; i < 12; i++) {
+            codigo.append(ALFABETO_CODIGO.charAt(ALEATORIO_SEGURO.nextInt(ALFABETO_CODIGO.length())));
+        }
+        return codigo.toString();
+    }
+
+    private String hashCodigo(String codigo) {
+        try {
+            byte[] hash = MessageDigest.getInstance("SHA-256")
+                    .digest(codigo.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 no está disponible", e);
+        }
     }
 }
