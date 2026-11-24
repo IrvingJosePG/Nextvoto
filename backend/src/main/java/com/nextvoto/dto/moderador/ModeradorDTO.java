@@ -4,9 +4,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.nextvoto.entity.Encuesta.TipoEncuesta;
+import com.nextvoto.entity.Participacion.EstadoParticipacion;
+import com.nextvoto.entity.TipoRespuesta;
+import com.nextvoto.entity.TipoVoto;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -36,6 +40,13 @@ public class ModeradorDTO {
             List<PreguntaResultado> preguntas) {
     }
 
+    // Una fila = una persona dentro de un cuestionario del moderador.
+    // Nunca incluye la opción elegida: el voto es privado.
+    public record Participante(Long idParticipacion, Long idUsuario, String nombre, String email,
+            boolean cuentaActiva, Long idEncuesta, String tituloEncuesta, TipoEncuesta tipoEncuesta,
+            EstadoParticipacion estado, LocalDateTime fechaVoto) {
+    }
+
     // ---------- Peticiones ----------
 
     public record NuevaPregunta(
@@ -46,7 +57,16 @@ public class ModeradorDTO {
             @NotNull(message = "Agrega las opciones de la pregunta")
             @Size(min = 2, max = 10, message = "Cada pregunta necesita entre 2 y 10 opciones")
             List<@NotBlank(message = "Las opciones no pueden estar vacías")
-                 @Size(max = 200, message = "Cada opción admite máximo 200 caracteres") String> opciones) {
+                 @Size(max = 200, message = "Cada opción admite máximo 200 caracteres") String> opciones,
+
+            @NotNull(message = "Elige si la pregunta es de opción única o múltiple")
+            TipoRespuesta tipoRespuesta,
+
+            @Min(value = 1, message = "El mínimo de selecciones debe ser al menos 1")
+            Integer minSelecciones,
+
+            @Min(value = 1, message = "El máximo de selecciones debe ser al menos 1")
+            Integer maxSelecciones) {
     }
 
     public record NuevaEncuesta(
@@ -57,12 +77,34 @@ public class ModeradorDTO {
             @Size(max = 2000, message = "La descripción no puede pasar de 2000 caracteres")
             String descripcion,
 
-            @NotNull(message = "Selecciona el tipo: votación o encuesta")
+            @NotNull(message = "Selecciona el tipo: votación, encuesta o cuestionario")
             TipoEncuesta tipo,
+
+            @NotBlank(message = "Escribe a quién va dirigido")
+            @Size(max = 150, message = "El campo «dirigido a» no puede pasar de 150 caracteres")
+            String dirigidoA,
+
+            @NotNull(message = "Elige si el voto es anónimo o identificado")
+            TipoVoto tipoVoto,
+
+            @NotNull(message = "Indica si se permiten comentarios")
+            Boolean permiteComentarios,
+
+            @Min(value = 1, message = "El máximo de participantes debe ser al menos 1")
+            Integer maxParticipantes,
+
+            @NotNull(message = "Indica si solo votan usuarios con cuenta")
+            Boolean soloRegistrados,
+
+            @NotNull(message = "La fecha de inicio es obligatoria")
+            LocalDateTime fechaInicio,
 
             @NotNull(message = "La fecha límite es obligatoria")
             @Future(message = "La fecha límite debe ser posterior al momento actual")
             LocalDateTime fechaLimite,
+
+            @NotBlank(message = "Elige el tipo de gráfica")
+            String tipoGrafica,
 
             @NotEmpty(message = "Agrega al menos una pregunta")
             @Size(max = 15, message = "Un cuestionario admite máximo 15 preguntas")

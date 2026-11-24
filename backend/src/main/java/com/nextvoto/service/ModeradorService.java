@@ -15,14 +15,17 @@ import com.nextvoto.dto.moderador.ModeradorDTO.EncuestaResumen;
 import com.nextvoto.dto.moderador.ModeradorDTO.NuevaEncuesta;
 import com.nextvoto.dto.moderador.ModeradorDTO.NuevaPregunta;
 import com.nextvoto.dto.moderador.ModeradorDTO.OpcionResultado;
+import com.nextvoto.dto.moderador.ModeradorDTO.Participante;
 import com.nextvoto.dto.moderador.ModeradorDTO.PreguntaResultado;
 import com.nextvoto.dto.moderador.ModeradorDTO.Resultados;
 import com.nextvoto.dto.moderador.ModeradorDTO.Resumen;
 import com.nextvoto.entity.Encuesta;
 import com.nextvoto.entity.Encuesta.TipoEncuesta;
 import com.nextvoto.entity.Opcion;
+import com.nextvoto.entity.Participacion;
 import com.nextvoto.entity.Participacion.EstadoParticipacion;
 import com.nextvoto.entity.Pregunta;
+import com.nextvoto.entity.TipoRespuesta;
 import com.nextvoto.entity.Usuario;
 import com.nextvoto.exception.BusinessException;
 import com.nextvoto.exception.ResourceNotFoundException;
@@ -33,6 +36,8 @@ import com.nextvoto.repository.PreguntaRepository;
 import com.nextvoto.repository.RespuestaRepository;
 import com.nextvoto.repository.UsuarioRepository;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -48,6 +53,9 @@ public class ModeradorService {
     private final PreguntaRepository preguntaRepository;
     private final OpcionRepository opcionRepository;
     private final RespuestaRepository respuestaRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     // ---------- Inicio ----------
 
@@ -89,7 +97,14 @@ public class ModeradorService {
                 .titulo(datos.titulo().trim())
                 .descripcion(limpiar(datos.descripcion()))
                 .tipo(datos.tipo())
+                .dirigidoA(datos.dirigidoA().trim())
+                .tipoVoto(datos.tipoVoto())
+                .permiteComentarios(datos.permiteComentarios())
+                .maxParticipantes(datos.maxParticipantes())
+                .soloRegistrados(datos.soloRegistrados())
+                .tipoGrafica(datos.tipoGrafica())
                 .codigoPin(generarPinUnico())
+                .fechaInicio(datos.fechaInicio())
                 .fechaLimite(datos.fechaLimite())
                 .activa(true)
                 .moderador(moderador)
@@ -97,9 +112,14 @@ public class ModeradorService {
 
         int orden = 1;
         for (NuevaPregunta nueva : datos.preguntas()) {
+            boolean multiple = nueva.tipoRespuesta() == TipoRespuesta.MULTIPLE;
+
             Pregunta pregunta = Pregunta.builder()
                     .texto(nueva.texto().trim())
                     .orden(orden++)
+                    .tipoRespuesta(nueva.tipoRespuesta())
+                    .minSelecciones(multiple ? nueva.minSelecciones() : null)
+                    .maxSelecciones(multiple ? nueva.maxSelecciones() : null)
                     .encuesta(encuesta)
                     .build();
 
@@ -113,6 +133,36 @@ public class ModeradorService {
         }
 
         return aResumen(encuestaRepository.save(encuesta), LocalDateTime.now());
+    }
+
+    // ---------- Participantes ----------
+
+    // Personas que se unieron o votaron en los cuestionarios del moderador.
+    // Se consulta con JPQL propio para no modificar los repositorios del equipo.
+    public List<Participante> listarParticipantes(String email) {
+        Long idModerador = buscarModerador(email).getIdUsuario();
+
+        List<Participacion> participaciones = entityManager.createQuery(
+                "SELECT p FROM Participacion p JOIN FETCH p.usuario "
+                        + "WHERE p.encuesta.moderador.idUsuario = :idModerador "
+                        + "ORDER BY p.idParticipacion DESC",
+                Participacion.class)
+                .setParameter("idModerador", idModerador)
+                .getResultList();
+
+        return participaciones.stream()
+                .map(p -> new Participante(
+                        p.getIdParticipacion(),
+                        p.getUsuario().getIdUsuario(),
+                        p.getUsuario().getNombre(),
+                        p.getUsuario().getEmail(),
+                        Boolean.TRUE.equals(p.getUsuario().getActivo()),
+                        p.getEncuesta().getIdEncuesta(),
+                        p.getEncuesta().getTitulo(),
+                        p.getEncuesta().getTipo(),
+                        p.getEstado(),
+                        p.getFechaVoto()))
+                .toList();
     }
 
     // ---------- Resultados ----------
@@ -194,9 +244,13 @@ public class ModeradorService {
     }
 
     private void validarEstructura(NuevaEncuesta datos) {
+        if (!datos.fechaInicio().isBefore(datos.fechaLimite())) {
+            throw new BusinessException("La fecha de inicio debe ser anterior a la fecha límite.");
+        }
+
         if (datos.tipo() == TipoEncuesta.VOTACION && datos.preguntas().size() != 1) {
             throw new BusinessException(
-                    "Una votación tiene exactamente 1 pregunta. Si necesitas varias, crea una encuesta.");
+                    "Una votación tiene exactamente 1 pregunta. Si necesitas varias, crea una encuesta o un cuestionario.");
         }
 
         for (NuevaPregunta pregunta : datos.preguntas()) {
@@ -205,6 +259,20 @@ public class ModeradorService {
                 if (!vistas.add(opcion.trim().toLowerCase())) {
                     throw new BusinessException(
                             "Hay opciones repetidas en la pregunta «" + pregunta.texto().trim() + "».");
+                }
+            }
+
+            if (pregunta.tipoRespuesta() == TipoRespuesta.MULTIPLE) {
+                Integer min = pregunta.minSelecciones();
+                Integer max = pregunta.maxSelecciones();
+                if (min == null || max == null) {
+                    throw new BusinessException("Indica el mínimo y el máximo en las preguntas de opción múltiple.");
+                }
+                if (min > max) {
+                    throw new BusinessException("El mínimo de selecciones no puede ser mayor que el máximo.");
+                }
+                if (max > pregunta.opciones().size()) {
+                    throw new BusinessException("El máximo de selecciones no puede ser mayor que el número de opciones.");
                 }
             }
         }

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.nextvoto.dto.moderador.ModeradorDTO.EncuestaResumen;
 import com.nextvoto.dto.moderador.ModeradorDTO.NuevaEncuesta;
+import com.nextvoto.dto.moderador.ModeradorDTO.Participante;
 import com.nextvoto.dto.moderador.ModeradorDTO.Resultados;
 import com.nextvoto.dto.moderador.ModeradorDTO.Resumen;
 import com.nextvoto.service.ModeradorService;
@@ -44,6 +45,11 @@ public class ModeradorController {
     @ResponseStatus(HttpStatus.CREATED)
     public EncuestaResumen crear(@Valid @RequestBody NuevaEncuesta datos, Principal moderador) {
         return moderadorService.crearEncuesta(moderador.getName(), datos);
+    }
+
+    @GetMapping("/participantes")
+    public List<Participante> participantes(Principal moderador) {
+        return moderadorService.listarParticipantes(moderador.getName());
     }
 
     @GetMapping("/encuestas/{id}/resultados")

@@ -12,7 +12,7 @@ import java.util.List;
 public class Encuesta {
 
     public enum TipoEncuesta {
-        VOTACION, ENCUESTA
+        VOTACION, ENCUESTA, CUESTIONARIO
     }
 
     @Id
@@ -33,8 +33,37 @@ public class Encuesta {
     @Column(name = "codigo_pin", nullable = false, unique = true, length = 10)
     private String codigoPin;
 
+    @Column(name = "fecha_inicio")
+    private LocalDateTime fechaInicio;
+
     @Column(name = "fecha_limite", nullable = false)
     private LocalDateTime fechaLimite;
+
+    
+    @Column(name = "dirigido_a", length = 150)
+    private String dirigidoA;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_voto", nullable = false, length = 15)
+    @Builder.Default
+    private TipoVoto tipoVoto = TipoVoto.ANONIMO;
+
+    @Column(name = "permite_comentarios", nullable = false)
+    @Builder.Default
+    private Boolean permiteComentarios = false;
+
+    @Column(name = "max_participantes")
+    private Integer maxParticipantes;
+
+    @Column(name = "solo_registrados", nullable = false)
+    @Builder.Default
+    private Boolean soloRegistrados = true;
+
+    @Column(name = "tipo_grafica", nullable = false, length = 10)
+    @Builder.Default
+    private String tipoGrafica = "BARRAS";
+
+   
 
     @Column(nullable = false)
     private Boolean activa = true;
