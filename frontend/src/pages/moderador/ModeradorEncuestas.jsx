@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, Copy, Check, BarChart3, Lock, Trash2, PlusCircle, Filter, RotateCcw } from 'lucide-react';
 import api from '../../api/axiosConfig';
-import { StatCard, Badge, ConfirmModal } from '../../components/ui';
+import { Badge, ConfirmModal } from '../../components/ui';
 
 const ORDENES = [
   { valor: 'RECIENTES', texto: 'Más recientes' },
@@ -38,6 +38,28 @@ const ordenar = (lista, orden) => {
 
 const selectClase =
   'px-4 py-2 border border-slate-300 rounded-full text-sm bg-white text-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20';
+
+const COLORES_METRICA = {
+  amber: 'border-amber-500',
+  blue: 'border-blue-600',
+  emerald: 'border-emerald-500',
+  rose: 'border-rose-500',
+};
+
+function Metrica({ label, value, color, loading }) {
+  return (
+    <div className="min-w-0 flex items-center justify-between gap-3 bg-[#dbeafe] rounded-2xl px-4 py-4">
+      <p className="whitespace-pre-line text-sm font-semibold leading-tight text-slate-900">
+        {label}
+      </p>
+      <div
+        className={`shrink-0 w-12 h-12 rounded-full border-4 bg-white flex items-center justify-center text-sm font-extrabold text-slate-900 ${COLORES_METRICA[color]}`}
+      >
+        {loading ? <Loader2 className="w-4 h-4 animate-spin text-blue-700" /> : value}
+      </div>
+    </div>
+  );
+}
 
 export default function ModeradorEncuestas() {
   const navigate = useNavigate();
@@ -118,11 +140,8 @@ export default function ModeradorEncuestas() {
   );
 
   return (
-    <div className="max-w-6xl space-y-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-blue-700 tracking-tight">
-          Mis Encuestas
-        </h1>
+    <div className="space-y-8">
+      <div className="flex justify-end">
         <button
           type="button"
           onClick={() => navigate('/moderador/crear')}
@@ -133,11 +152,11 @@ export default function ModeradorEncuestas() {
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-7">
-        <StatCard label={'Cuestionarios\nActivos'} value={resumen?.encuestasActivas ?? 0} color="amber" loading={loading} />
-        <StatCard label={'Total de\nCuestionarios'} value={resumen?.encuestasTotales ?? 0} color="blue" loading={loading} />
-        <StatCard label={'Votos\nEmitidos'} value={resumen?.votosEmitidos ?? 0} color="emerald" loading={loading} />
-        <StatCard label={'Tasa de\nParticipación'} value={`${resumen?.tasaParticipacion ?? 0}%`} color="rose" loading={loading} />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Metrica label={'Cuestionarios\nActivos'} value={resumen?.encuestasActivas ?? 0} color="amber" loading={loading} />
+        <Metrica label={'Total de\nCuestionarios'} value={resumen?.encuestasTotales ?? 0} color="blue" loading={loading} />
+        <Metrica label={'Votos\nEmitidos'} value={resumen?.votosEmitidos ?? 0} color="emerald" loading={loading} />
+        <Metrica label={'Tasa de\nParticipación'} value={`${resumen?.tasaParticipacion ?? 0}%`} color="rose" loading={loading} />
       </div>
 
       <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xs border border-slate-100">

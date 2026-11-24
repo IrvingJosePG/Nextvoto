@@ -81,7 +81,6 @@ export default function ModeradorInicio() {
 
   const abiertas = encuestas.filter((e) => e.abierta);
 
-  // Las 3 abiertas con la fecha de cierre más cercana
   const proximas = [...abiertas]
     .sort((a, b) => new Date(a.fechaLimite) - new Date(b.fechaLimite))
     .slice(0, 3);
@@ -95,8 +94,7 @@ export default function ModeradorInicio() {
 
   return (
     <div className="max-w-6xl space-y-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-blue-700 tracking-tight">Inicio</h1>
+      <div className="flex justify-end">
         <button
           type="button"
           onClick={() => navigate('/moderador/crear')}

@@ -2,13 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Filter, Loader2, PlusCircle, RotateCcw } from 'lucide-react';
 import api from '../../api/axiosConfig';
-import { Badge, StatCard } from '../../components/ui';
+import { Badge } from '../../components/ui';
+import Metrica from '../../components/moderador/Metrica';
 
 const POR_PAGINA = 10;
 
 const TIPOS = {
   VOTACION: { texto: 'Votación', variant: 'info' },
   ENCUESTA: { texto: 'Encuesta', variant: 'neutral' },
+  CUESTIONARIO: { texto: 'Cuestionario', variant: 'neutral' },
 };
 
 const ESTADOS = {
@@ -106,17 +108,8 @@ export default function ModeradorParticipantes() {
 
   return (
     <div className="max-w-6xl space-y-8">
-      {/* Encabezado */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-blue-700 tracking-tight">
-            Participantes
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Personas que se unieron o votaron en tus cuestionarios. El sentido de cada voto es
-            privado y no se muestra.
-          </p>
-        </div>
+      {/* Sin título ni subtítulo: solo el botón, a la derecha */}
+      <div className="flex justify-end">
         <button
           type="button"
           onClick={() => navigate('/moderador/crear')}
@@ -130,10 +123,10 @@ export default function ModeradorParticipantes() {
       {error && <p className="text-rose-600 font-semibold">{error}</p>}
 
       {/* Resumen */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 [&>div]:min-w-0 [&>div]:px-6 [&>div]:gap-4">
-        <StatCard label={'Personas\nDistintas'} value={personasUnicas} color="blue" loading={loading} />
-        <StatCard label={'Votos\nEmitidos'} value={hanVotado} color="emerald" loading={loading} />
-        <StatCard label={'Sin votar\naún'} value={pendientes} color="amber" loading={loading} />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Metrica label={'Personas\nDistintas'} value={personasUnicas} color="blue" loading={loading} />
+        <Metrica label={'Votos\nEmitidos'} value={hanVotado} color="emerald" loading={loading} />
+        <Metrica label={'Sin votar\naún'} value={pendientes} color="amber" loading={loading} />
       </div>
 
       {/* Filtros */}
@@ -156,6 +149,7 @@ export default function ModeradorParticipantes() {
           <option value="TODOS">Todos los tipos</option>
           <option value="VOTACION">Votación</option>
           <option value="ENCUESTA">Encuesta</option>
+          <option value="CUESTIONARIO">Cuestionario</option>
         </select>
 
         <select value={estado} onChange={cambiar(setEstado)} aria-label="Estado de participación" className={selectClase}>
