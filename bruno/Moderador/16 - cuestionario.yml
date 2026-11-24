@@ -1,0 +1,41 @@
+info:
+  name: 16 - cuestionario
+  type: http
+  seq: 16
+
+http:
+  method: POST
+  url: http://localhost:8080/api/moderador/encuestas
+  body:
+    type: json
+    data: |-
+      {
+        "titulo": "Menú del convivio de fin de curso",
+        "descripcion": "Elige qué se servirá en el convivio",
+        "tipo": "VOTACION",
+        "dirigidoA": "Comité organizador",
+        "tipoVoto": "IDENTIFICADO",
+        "permiteComentarios": false,
+        "maxParticipantes": 5,
+        "soloRegistrados": true,
+        "fechaInicio": "2026-11-25T08:00:00",
+        "fechaLimite": "2026-12-10T20:00:00",
+        "tipoGrafica": "PASTEL",
+        "preguntas": [
+          {
+            "texto": "¿Qué prefieres para el convivio?",
+            "opciones": ["Tacos", "Pizza", "Hamburguesas"],
+            "tipoRespuesta": "UNICA"
+          }
+        ]
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiJ9.eyJpZFVzdWFyaW8iOiIyIiwicm9sIjoiTU9ERVJBRE9SIiwibm9tYnJlIjoiUHJvZi4gQ2FybG9zIE1lbmRvemEiLCJzdWIiOiJjYXJsb3MubWVuZG96YUBuZXh0dm90by5jb20iLCJpYXQiOjE3OTU1NDgxODcsImV4cCI6MTc5NTYzNDU4N30.mxjiPaLX-4XntQ036geIbTHBp1Vvzbbo8UDWq5aFYo8
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

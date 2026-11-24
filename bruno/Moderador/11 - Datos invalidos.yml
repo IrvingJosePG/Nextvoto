@@ -1,0 +1,23 @@
+info:
+  name: 11 - Datos invalidos
+  type: http
+  seq: 11
+
+http:
+  method: POST
+  url: http://localhost:8080/api/moderador/encuestas
+  body:
+    type: json
+    data: |-
+      {
+        "titulo": "",
+        "preguntas": []
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

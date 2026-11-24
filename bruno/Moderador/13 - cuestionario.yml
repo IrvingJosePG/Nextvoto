@@ -1,0 +1,41 @@
+info:
+  name: 13 - cuestionario
+  type: http
+  seq: 13
+
+http:
+  method: POST
+  url: http://localhost:8080/api/moderador/encuestas
+  body:
+    type: json
+    data: |-
+      {
+        "titulo": "Elección del jefe de grupo 7SC",
+        "descripcion": "Votación para elegir al representante del grupo durante el semestre",
+        "tipo": "VOTACION",
+        "dirigidoA": "Alumnos del grupo 7SC",
+        "tipoVoto": "IDENTIFICADO",
+        "permiteComentarios": false,
+        "maxParticipantes": 30,
+        "soloRegistrados": true,
+        "fechaInicio": "2026-11-26T08:00:00",
+        "fechaLimite": "2026-12-15T18:00:00",
+        "tipoGrafica": "PASTEL",
+        "preguntas": [
+          {
+            "texto": "¿A quién eliges como jefe de grupo?",
+            "opciones": ["Ana López", "Carlos Ramírez", "María Torres", "Voto en blanco"],
+            "tipoRespuesta": "UNICA"
+          }
+        ]
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiJ9.eyJpZFVzdWFyaW8iOiIyIiwicm9sIjoiTU9ERVJBRE9SIiwibm9tYnJlIjoiUHJvZi4gQ2FybG9zIE1lbmRvemEiLCJzdWIiOiJjYXJsb3MubWVuZG96YUBuZXh0dm90by5jb20iLCJpYXQiOjE3OTU1NDgxODcsImV4cCI6MTc5NTYzNDU4N30.mxjiPaLX-4XntQ036geIbTHBp1Vvzbbo8UDWq5aFYo8
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

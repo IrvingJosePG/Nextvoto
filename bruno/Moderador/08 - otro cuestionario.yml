@@ -1,0 +1,46 @@
+info:
+  name: 08 - otro cuestionario
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: http://localhost:8080/api/moderador/encuestas
+  body:
+    type: json
+    data: |-
+      {
+        "titulo": "Encuesta de satisfacción del curso",
+        "descripcion": "Opinión de los alumnos sobre el curso de programación web",
+        "tipo": "ENCUESTA",
+        "dirigidoA": "Grupo de programación web",
+        "tipoVoto": "ANONIMO",
+        "permiteComentarios": true,
+        "maxParticipantes": 50,
+        "soloRegistrados": true,
+        "fechaInicio": "2026-11-25T08:00:00",
+        "fechaLimite": "2027-02-15T23:59:59",
+        "tipoGrafica": "BARRAS",
+        "preguntas": [
+          {
+            "texto": "¿Qué tan claro fue el contenido del curso?",
+            "opciones": ["Muy claro", "Claro", "Poco claro", "Nada claro"],
+            "tipoRespuesta": "UNICA"
+          },
+          {
+            "texto": "¿Qué tema te gustó más?",
+            "opciones": ["Spring Boot", "React", "Base de datos", "Despliegue en VPS"],
+            "tipoRespuesta": "UNICA"
+          }
+        ]
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiJ9.eyJpZFVzdWFyaW8iOiIyIiwicm9sIjoiTU9ERVJBRE9SIiwibm9tYnJlIjoiUHJvZi4gQ2FybG9zIE1lbmRvemEiLCJzdWIiOiJjYXJsb3MubWVuZG96YUBuZXh0dm90by5jb20iLCJpYXQiOjE3OTU1NDgxODcsImV4cCI6MTc5NTYzNDU4N30.mxjiPaLX-4XntQ036geIbTHBp1Vvzbbo8UDWq5aFYo8
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

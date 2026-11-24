@@ -1,0 +1,41 @@
+info:
+  name: 07 - Crear cuestionario
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: http://localhost:8080/api/moderador/encuestas
+  body:
+    type: json
+    data: |-
+      {
+        "titulo": "Cuestionario de prueba Bruno",
+        "descripcion": "Creado desde Bruno para probar el endpoint",
+        "tipo": "CUESTIONARIO",
+        "dirigidoA": "Alumnos de programación web",
+        "tipoVoto": "ANONIMO",
+        "permiteComentarios": false,
+        "maxParticipantes": 30,
+        "soloRegistrados": true,
+        "fechaInicio": "2026-11-25T08:00:00",
+        "fechaLimite": "2027-02-01T23:59:59",
+        "tipoGrafica": "BARRAS",
+        "preguntas": [
+          {
+            "texto": "¿Qué lenguaje prefieres para el backend?",
+            "opciones": ["Java", "Python", "JavaScript"],
+            "tipoRespuesta": "UNICA"
+          }
+        ]
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiJ9.eyJpZFVzdWFyaW8iOiIyIiwicm9sIjoiTU9ERVJBRE9SIiwibm9tYnJlIjoiUHJvZi4gQ2FybG9zIE1lbmRvemEiLCJzdWIiOiJjYXJsb3MubWVuZG96YUBuZXh0dm90by5jb20iLCJpYXQiOjE3OTU1NDgxODcsImV4cCI6MTc5NTYzNDU4N30.mxjiPaLX-4XntQ036geIbTHBp1Vvzbbo8UDWq5aFYo8
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

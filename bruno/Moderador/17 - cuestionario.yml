@@ -1,0 +1,50 @@
+info:
+  name: 17 - cuestionario
+  type: http
+  seq: 17
+
+http:
+  method: POST
+  url: http://localhost:8080/api/moderador/encuestas
+  body:
+    type: json
+    data: |-
+      {
+        "titulo": "Satisfacción con los talleres",
+        "descripcion": "Ayúdanos a mejorar los talleres extracurriculares",
+        "tipo": "ENCUESTA",
+        "dirigidoA": "Asistentes a los talleres",
+        "tipoVoto": "ANONIMO",
+        "permiteComentarios": true,
+        "maxParticipantes": 100,
+        "soloRegistrados": true,
+        "fechaInicio": "2026-11-25T08:00:00",
+        "fechaLimite": "2027-02-01T23:59:59",
+        "tipoGrafica": "BARRAS",
+        "preguntas": [
+          {
+            "texto": "¿Qué aspectos mejorarías? (elige de 1 a 2)",
+            "opciones": ["Horarios", "Instructores", "Material", "Instalaciones"],
+            "tipoRespuesta": "MULTIPLE",
+            "minSelecciones": 1,
+            "maxSelecciones": 2
+          },
+          {
+            "texto": "¿A qué talleres asististe? (elige de 1 a 3)",
+            "opciones": ["Programación", "Redes", "Diseño", "Robótica"],
+            "tipoRespuesta": "MULTIPLE",
+            "minSelecciones": 1,
+            "maxSelecciones": 3
+          }
+        ]
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiJ9.eyJpZFVzdWFyaW8iOiIyIiwicm9sIjoiTU9ERVJBRE9SIiwibm9tYnJlIjoiUHJvZi4gQ2FybG9zIE1lbmRvemEiLCJzdWIiOiJjYXJsb3MubWVuZG96YUBuZXh0dm90by5jb20iLCJpYXQiOjE3OTU1NDgxODcsImV4cCI6MTc5NTYzNDU4N30.mxjiPaLX-4XntQ036geIbTHBp1Vvzbbo8UDWq5aFYo8
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

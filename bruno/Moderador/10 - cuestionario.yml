@@ -1,0 +1,41 @@
+info:
+  name: 10 - cuestionario
+  type: http
+  seq: 10
+
+http:
+  method: POST
+  url: http://localhost:8080/api/moderador/encuestas
+  body:
+    type: json
+    data: |-
+      {
+        "titulo": "Elección del tema del hackathon",
+        "descripcion": "Vota por la temática del próximo hackathon del instituto",
+        "tipo": "VOTACION",
+        "dirigidoA": "Alumnos de sistemas",
+        "tipoVoto": "ANONIMO",
+        "permiteComentarios": false,
+        "maxParticipantes": 100,
+        "soloRegistrados": true,
+        "fechaInicio": "2026-11-25T08:00:00",
+        "fechaLimite": "2027-01-20T23:59:59",
+        "tipoGrafica": "BARRAS",
+        "preguntas": [
+          {
+            "texto": "¿Qué temática prefieres para el hackathon?",
+            "opciones": ["Inteligencia artificial", "Ciberseguridad", "Apps móviles", "Internet de las cosas"],
+            "tipoRespuesta": "UNICA"
+          }
+        ]
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiJ9.eyJpZFVzdWFyaW8iOiIyIiwicm9sIjoiTU9ERVJBRE9SIiwibm9tYnJlIjoiUHJvZi4gQ2FybG9zIE1lbmRvemEiLCJzdWIiOiJjYXJsb3MubWVuZG96YUBuZXh0dm90by5jb20iLCJpYXQiOjE3OTU1NDgxODcsImV4cCI6MTc5NTYzNDU4N30.mxjiPaLX-4XntQ036geIbTHBp1Vvzbbo8UDWq5aFYo8
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

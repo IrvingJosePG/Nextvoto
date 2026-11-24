@@ -1,0 +1,48 @@
+info:
+  name: 14- cuestionario
+  type: http
+  seq: 14
+
+http:
+  method: POST
+  url: http://localhost:8080/api/moderador/encuestas
+  body:
+    type: json
+    data: |-
+      {
+        "titulo": "Encuesta de intereses tecnológicos",
+        "descripcion": "Para planear los talleres del próximo semestre",
+        "tipo": "ENCUESTA",
+        "dirigidoA": "Estudiantes de Ingeniería en Sistemas",
+        "tipoVoto": "ANONIMO",
+        "permiteComentarios": true,
+        "maxParticipantes": 60,
+        "soloRegistrados": true,
+        "fechaInicio": "2026-11-25T09:00:00",
+        "fechaLimite": "2027-01-20T23:59:59",
+        "tipoGrafica": "BARRAS",
+        "preguntas": [
+          {
+            "texto": "¿Qué tecnologías te gustaría aprender? (elige hasta 3)",
+            "opciones": ["React", "Spring Boot", "Docker", "Python", "Ciberseguridad"],
+            "tipoRespuesta": "MULTIPLE",
+            "minSelecciones": 1,
+            "maxSelecciones": 3
+          },
+          {
+            "texto": "¿Con qué frecuencia programas?",
+            "opciones": ["Diario", "Semanal", "Casi nunca"],
+            "tipoRespuesta": "UNICA"
+          }
+        ]
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiJ9.eyJpZFVzdWFyaW8iOiIyIiwicm9sIjoiTU9ERVJBRE9SIiwibm9tYnJlIjoiUHJvZi4gQ2FybG9zIE1lbmRvemEiLCJzdWIiOiJjYXJsb3MubWVuZG96YUBuZXh0dm90by5jb20iLCJpYXQiOjE3OTU1NDgxODcsImV4cCI6MTc5NTYzNDU4N30.mxjiPaLX-4XntQ036geIbTHBp1Vvzbbo8UDWq5aFYo8
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
