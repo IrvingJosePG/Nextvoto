@@ -13,7 +13,7 @@ Sandoval Reyes Miguel
 
 [Repositorio](https://github.com/IrvingJosePG/Nextvoto) ·
 [Proyecto desplegado](https://TU_DOMINIO_VPS.com) ·
-[GitHub Projects](https://github.com/users/IrvingJosePG/projects/TU_NUMERO_PROYECTO) ·
+[GitHub Projects](https://github.com/users/IrvingJosePG/projects/1) ·
 [Prototipo en Figma](https://www.figma.com/design/rvq9m6FT1Pln9oJB62RW2k/Act7_Mockup_Equipo?node-id=1-2&t=Hff8UcLxNUEqbYr3-1)
 
 </div>

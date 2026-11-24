@@ -51,7 +51,7 @@ public class AuthController {
         authService.solicitarRecuperacion(request);
         // No incluir el código secreto ni revelar si el correo está registrado.
         return ResponseEntity.ok(new MessageResponse(
-                "Si el correo está registrado, recibirás un código de recuperación"
+                "Si la cuenta está registrada, recibirás un código de recuperación"
         ));
     }
 

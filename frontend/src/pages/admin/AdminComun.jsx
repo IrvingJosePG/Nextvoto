@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import filtro from '../../assets/admin/filtro.svg';
+import { Search } from 'lucide-react';
 import { Button, ConfirmModal } from '../../components/ui';
 import { mensajeError } from './datosAdmin';
 
@@ -18,7 +18,9 @@ export function CargaAdmin({ error, reintentar }) {
 export function FiltrosAdmin({ children }) {
   return (
     <div className="admin-filters">
-      <div className="admin-filter-icon" aria-hidden="true"><img src={filtro} alt="" /></div>
+      <div className="flex items-center justify-center shrink-0 pl-1.5 text-slate-400" aria-hidden="true">
+        <Search className="h-5 w-5" />
+      </div>
       {children}
     </div>
   );
