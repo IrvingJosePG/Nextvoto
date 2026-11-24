@@ -299,7 +299,8 @@ public class ModeradorService {
                 Boolean.TRUE.equals(encuesta.getActiva()), encuesta.estaAbierta(ahora),
                 contar(encuesta, EstadoParticipacion.COMPLETADA),
                 contar(encuesta, EstadoParticipacion.PENDIENTE),
-                encuesta.getPreguntas().size());
+                encuesta.getPreguntas().size(),
+                encuesta.getMaxParticipantes());
     }
 
     private String limpiar(String texto) {

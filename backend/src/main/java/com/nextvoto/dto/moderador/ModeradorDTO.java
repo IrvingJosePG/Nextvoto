@@ -26,7 +26,7 @@ public class ModeradorDTO {
 
     public record EncuestaResumen(Long idEncuesta, String titulo, String descripcion, TipoEncuesta tipo,
             String codigoPin, LocalDateTime fechaLimite, boolean activa, boolean abierta,
-            long participantes, long pendientes, int totalPreguntas) {
+            long participantes, long pendientes, int totalPreguntas, Integer maxParticipantes) {
     }
 
     public record OpcionResultado(Long idOpcion, String texto, long votos, double porcentaje) {

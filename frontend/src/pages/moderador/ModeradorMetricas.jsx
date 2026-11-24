@@ -201,8 +201,8 @@ export default function ModeradorMetricas() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {visibles.map((e) => {
             const estado = estadoDe(e);
-            const total = e.participantes + (e.pendientes ?? 0);
-            const avance = total > 0 ? Math.round((e.participantes / total) * 100) : 0;
+            const limite = e.maxParticipantes ?? e.participantes + (e.pendientes ?? 0);
+            const avance = limite > 0 ? Math.min(100, Math.round((e.participantes / limite) * 100)) : 0;
             const tipoTexto = e.tipo === 'VOTACION' ? 'Votación' : 'Encuesta';
 
             return (
@@ -218,7 +218,8 @@ export default function ModeradorMetricas() {
 
                 <div>
                   <p className="text-sm font-semibold text-slate-700">
-                    Participaron: {e.participantes}/{total}
+                    Participaron:{' '}
+                    {e.maxParticipantes != null ? `${e.participantes}/${e.maxParticipantes}` : e.participantes}
                   </p>
                   <div className="mt-2 h-2 rounded-full bg-[#eef3fb] overflow-hidden">
                     <div

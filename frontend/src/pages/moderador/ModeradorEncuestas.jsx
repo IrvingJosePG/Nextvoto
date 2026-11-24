@@ -216,7 +216,6 @@ export default function ModeradorEncuestas() {
               <tbody>
                 {visibles.map((e) => {
                   const estado = estadoDe(e);
-                  const total = e.participantes + (e.pendientes ?? 0);
                   return (
                     <tr key={e.idEncuesta} className="border-b border-slate-100 last:border-0">
                       <td className="py-4 pr-4">
@@ -242,8 +241,15 @@ export default function ModeradorEncuestas() {
                         </button>
                       </td>
                       <td className="py-4 pr-4 text-slate-700 whitespace-nowrap">{formatearFecha(e.fechaLimite)}</td>
-                      <td className="py-4 pr-4 text-center font-semibold text-slate-800 whitespace-nowrap">
-                        {e.participantes}/{total}
+                      <td
+                        className="py-4 pr-4 text-center font-semibold text-slate-800 whitespace-nowrap"
+                        title={
+                          e.maxParticipantes != null
+                            ? `Votaron ${e.participantes} de ${e.maxParticipantes} permitidos`
+                            : 'Sin límite de participantes'
+                        }
+                      >
+                        {e.maxParticipantes != null ? `${e.participantes}/${e.maxParticipantes}` : e.participantes}
                       </td>
                       <td className="py-4 pr-4">
                         <Badge variant={estado.variant}>{estado.texto}</Badge>
