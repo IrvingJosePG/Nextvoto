@@ -21,6 +21,21 @@ public class Pregunta {
     @Column(nullable = false)
     private Integer orden;
 
+    
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_respuesta", nullable = false, length = 10)
+    @Builder.Default
+    private TipoRespuesta tipoRespuesta = TipoRespuesta.UNICA;
+
+    @Column(name = "min_selecciones")
+    private Integer minSelecciones;
+
+    @Column(name = "max_selecciones")
+    private Integer maxSelecciones;
+
+    // -----------------------------------
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "encuesta_id", nullable = false)
     private Encuesta encuesta;

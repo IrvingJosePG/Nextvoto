@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
+  Menu,
   ChevronRight,
   ChevronDown,
   UserCircle2,
@@ -23,14 +24,18 @@ const PORTAL_POR_ROL = {
 const SECCION_POR_RUTA = {
   '/votante': 'Inicio',
   '/votante/historial': 'Resultados e Historial',
+  '/moderador': 'Inicio',
   '/moderador/encuestas': 'Mis Encuestas',
   '/moderador/crear': 'Crear Encuesta',
+  '/moderador/participantes': 'Participantes',
+  '/moderador/metricas': 'Métricas y Resultados',
+  '/moderador/configuracion': 'Configuración',
   '/admin': 'Inicio',
   '/admin/usuarios': 'Usuarios',
   '/admin/encuestas': 'Encuestas y votaciones',
 };
 
-export default function Topbar() {
+export default function Topbar({ menuLateralAbierto = true, onToggleMenu = () => {} }) {
   const { user, logout } = useAuth();
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -69,12 +74,27 @@ export default function Topbar() {
   return (
     <>
       <header className="bg-[#dbeafe] rounded-b-3xl px-6 sm:px-8 py-3.5 flex items-center justify-between shadow-2xs relative z-20">
-        <div className="flex items-center gap-2 text-base min-w-0">
-          <span className="font-medium text-blue-800/75 hidden sm:inline">{portal}</span>
-          <ChevronRight className="w-4 h-4 text-blue-800/50 hidden sm:inline shrink-0" />
-          <span className="font-bold text-slate-900 tracking-tight truncate">{seccion}</span>
+        <div className="flex items-center gap-3 min-w-0">
+          {/* Botón de hamburguesa: abre y cierra el menú lateral */}
+          <button
+            type="button"
+            onClick={onToggleMenu}
+            aria-label={menuLateralAbierto ? 'Ocultar menú lateral' : 'Mostrar menú lateral'}
+            aria-expanded={menuLateralAbierto}
+            className="p-2 -ml-2 rounded-xl text-blue-800 hover:bg-blue-200/60 transition-colors cursor-pointer shrink-0"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          {/* Breadcrumb profesional */}
+          <div className="flex items-center gap-2 text-base min-w-0">
+            <span className="font-medium text-blue-800/75 hidden sm:inline shrink-0">{portal}</span>
+            <ChevronRight className="w-4 h-4 text-blue-800/50 hidden sm:inline shrink-0" />
+            <span className="font-bold text-slate-900 tracking-tight truncate">{seccion}</span>
+          </div>
         </div>
 
+        {/* Menú desplegable de usuario */}
         <div className="relative shrink-0" ref={dropdownRef}>
           <button
             type="button"
@@ -91,7 +111,9 @@ export default function Topbar() {
               </span>
             </div>
             <ChevronDown
-              className={`w-4 h-4 text-slate-600 transition-transform duration-150 ${menuAbierto ? 'rotate-180' : ''}`}
+              className={`w-4 h-4 text-slate-600 transition-transform duration-150 ${
+                menuAbierto ? 'rotate-180' : ''
+              }`}
             />
           </button>
 
@@ -101,23 +123,33 @@ export default function Topbar() {
                 <p className="text-xs text-slate-400 font-medium">Sesión iniciada como</p>
                 <p className="text-sm font-semibold text-slate-800 truncate">{user.email}</p>
               </div>
+
               <button
                 type="button"
-                onClick={() => { setMenuAbierto(false); setModalPerfilAbierto(true); }}
+                onClick={() => {
+                  setMenuAbierto(false);
+                  setModalPerfilAbierto(true);
+                }}
                 className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 <User className="w-4 h-4 text-primary" />
                 <span>Mi perfil</span>
               </button>
+
               <button
                 type="button"
-                onClick={() => { setMenuAbierto(false); navigate('/recuperar'); }}
+                onClick={() => {
+                  setMenuAbierto(false);
+                  navigate('/recuperar');
+                }}
                 className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 <KeyRound className="w-4 h-4 text-primary" />
                 <span>Cambiar contraseña</span>
               </button>
+
               <div className="my-1 border-t border-slate-100" />
+
               <button
                 type="button"
                 onClick={handleLogout}
@@ -131,6 +163,7 @@ export default function Topbar() {
         </div>
       </header>
 
+      {/* Modal de información del perfil */}
       {modalPerfilAbierto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
           <div className="bg-white border border-slate-200 rounded-2xl shadow-xl max-w-md w-full p-6">
@@ -150,26 +183,42 @@ export default function Topbar() {
                 <X className="w-5 h-5" />
               </button>
             </div>
+
             <div className="space-y-4 my-5 text-sm">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Nombre completo</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Nombre completo
+                </p>
                 <p className="text-base font-semibold text-slate-900 mt-0.5">{user.nombre}</p>
               </div>
+
               <div className="flex items-center gap-2.5 text-slate-700">
                 <Mail className="w-4 h-4 text-slate-400 shrink-0" />
                 <span className="break-all">{user.email}</span>
               </div>
+
               <div className="flex items-center gap-2.5 text-slate-700">
                 <Shield className="w-4 h-4 text-slate-400 shrink-0" />
                 <span>Rol asignado:</span>
-                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-primary-light text-primary border border-blue-200">{user.rol}</span>
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-primary-light text-primary border border-blue-200">
+                  {user.rol}
+                </span>
               </div>
             </div>
+
             <div className="flex justify-end gap-2.5 pt-4 border-t border-slate-100">
-              <Button variant="secondary" onClick={() => { setModalPerfilAbierto(false); navigate('/recuperar'); }}>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setModalPerfilAbierto(false);
+                  navigate('/recuperar');
+                }}
+              >
                 Cambiar contraseña
               </Button>
-              <Button variant="primary" onClick={() => setModalPerfilAbierto(false)}>Cerrar</Button>
+              <Button variant="primary" onClick={() => setModalPerfilAbierto(false)}>
+                Cerrar
+              </Button>
             </div>
           </div>
         </div>
