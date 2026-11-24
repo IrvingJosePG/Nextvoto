@@ -48,10 +48,10 @@ public class AuthController {
     public ResponseEntity<MessageResponse> recuperarPassword(
             @Valid @RequestBody RecuperarPasswordRequest request
     ) {
-        String codigo = authService.solicitarRecuperacion(request);
+        authService.solicitarRecuperacion(request);
+        // No incluir el código secreto ni revelar si el correo está registrado.
         return ResponseEntity.ok(new MessageResponse(
-                "Si el correo existe, se ha enviado un código de recuperación",
-                codigo
+                "Si el correo está registrado, recibirás un código de recuperación"
         ));
     }
 
