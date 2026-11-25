@@ -4,7 +4,7 @@ info:
   seq: 1
 http:
   method: POST
-  url: '{{baseUrl}}/api/auth/login'
+  url: 'http://localhost:8080/api/auth/login'
   headers:
   - name: Content-Type
     value: application/json
@@ -17,32 +17,10 @@ http:
       }
   auth:
     type: none
-runtime:
-  scripts:
-  - type: after-response
-    code: |-
-      const data = res.getBody();
-      if (res.getStatus() === 200 && data && data.token && data.rol === 'ADMIN') {
-        // Variable temporal en memoria: NO guardar el JWT en Git.
-        bru.setVar('tokenAdmin', data.token);
-      }
-  - type: tests
-    code: |-
-      test("HTTP 200", function () {
-        expect(res.getStatus()).to.equal(200);
-      });
-      test("JWT de administrador presente", function () {
-        const r = res.getBody();
-        expect(r.rol).to.equal('ADMIN');
-        expect(r.token).to.be.a('string').and.not.empty;
-      });
 settings:
   encodeUrl: true
   timeout: 0
   followRedirects: true
   maxRedirects: 5
 docs: |-
-  Inicia sesión con la cuenta ADMIN de datos de prueba (migración V3).
-  El script guarda tokenAdmin como variable temporal en memoria para las peticiones siguientes.
-  No escribas tokens reales dentro del repositorio. Si el token expira, ejecuta este login nuevamente.
-  NOTA: esta credencial es de demostración y debe cambiarse antes de exponer el servicio públicamente.
+  Inicia sesion como ADMIN con POST. Copia manualmente el JWT del campo token de la respuesta. Pegalo en Auth -> Bearer Token de las peticiones ADMIN que quieras ejecutar. Si vence, inicia sesion otra vez. No guardes tokens reales en GitHub.

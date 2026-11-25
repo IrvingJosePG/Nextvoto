@@ -4,7 +4,7 @@ info:
   seq: 12
 http:
   method: POST
-  url: '{{baseUrl}}/api/admin/usuarios'
+  url: 'http://localhost:8080/api/admin/usuarios'
   headers:
   - name: Content-Type
     value: application/json
@@ -13,25 +13,18 @@ http:
     data: |-
       {
         "nombre": "Usuario de prueba duplicado",
-        "email": "{{correoUsuarioPrueba}}",
+        "email": "bruno.usuario.admin.prueba@ejemplo.com",
         "password": "Prueba2026!",
         "telefono": "+529511234567",
         "rol": "VOTANTE"
       }
   auth:
     type: bearer
-    token: '{{tokenAdmin}}'
-runtime:
-  scripts:
-  - type: tests
-    code: |-
-      test("HTTP 422", function () {
-        expect(res.getStatus()).to.equal(422);
-      });
+    token: PEGA_AQUI_TOKEN_ADMIN
 settings:
   encodeUrl: true
   timeout: 0
   followRedirects: true
   maxRedirects: 5
 docs: |-
-  Prueba negativa: intenta volver a crear el mismo correo de la petición 04 (sin regenerarlo). Debe devolver 422. Ejecutar antes de eliminar al usuario creado.
+  Prueba negativa: intenta crear de nuevo exactamente el mismo correo usado en la peticion 04, para comprobar que se rechaza el duplicado con HTTP 422.

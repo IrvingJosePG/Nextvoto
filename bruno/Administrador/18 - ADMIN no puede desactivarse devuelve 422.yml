@@ -1,0 +1,26 @@
+info:
+  name: 18 - ADMIN no puede desactivarse devuelve 422
+  type: http
+  seq: 18
+http:
+  method: PATCH
+  url: 'http://localhost:8080/api/admin/usuarios/REEMPLAZAR_ID_ADMIN/estado'
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "activo": false
+      }
+  auth:
+    type: bearer
+    token: PEGA_AQUI_TOKEN_ADMIN
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+docs: |-
+  Prueba negativa: reemplaza REEMPLAZAR_ID_ADMIN por el ID real de tu usuario ADMIN, obtenido del login. Pega un JWT ADMIN valido; se espera HTTP 422. No utilices un ID de otra cuenta.

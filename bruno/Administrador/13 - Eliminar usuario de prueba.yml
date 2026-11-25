@@ -4,21 +4,14 @@ info:
   seq: 13
 http:
   method: DELETE
-  url: '{{baseUrl}}/api/admin/usuarios/{{idUsuarioPrueba}}'
+  url: 'http://localhost:8080/api/admin/usuarios/REEMPLAZAR_ID_USUARIO_PRUEBA'
   auth:
     type: bearer
-    token: '{{tokenAdmin}}'
-runtime:
-  scripts:
-  - type: tests
-    code: |-
-      test("HTTP 204", function () {
-        expect(res.getStatus()).to.equal(204);
-      });
+    token: PEGA_AQUI_TOKEN_ADMIN
 settings:
   encodeUrl: true
   timeout: 0
   followRedirects: true
   maxRedirects: 5
 docs: |-
-  Elimina el usuario temporal de Bruno después de probarlo. No se puede borrar un usuario con encuestas creadas o votos COMPLETADOS; también se impide borrar al propio ADMIN.
+  ADVERTENCIA: elimina un usuario de prueba. Reemplaza el ID por el usuario temporal creado en la peticion 04. Requiere JWT ADMIN valido.

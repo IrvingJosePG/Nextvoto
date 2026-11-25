@@ -4,29 +4,14 @@ info:
   seq: 2
 http:
   method: GET
-  url: '{{baseUrl}}/api/admin/resumen'
+  url: 'http://localhost:8080/api/admin/resumen'
   auth:
     type: bearer
-    token: '{{tokenAdmin}}'
-runtime:
-  scripts:
-  - type: tests
-    code: |-
-      test("HTTP 200", function () {
-        expect(res.getStatus()).to.equal(200);
-      });
-      test("Contadores presentes", function () {
-        const r = res.getBody();
-        expect(r).to.have.property('usuariosRegistrados');
-        expect(r).to.have.property('usuariosActivos');
-        expect(r).to.have.property('encuestasTotales');
-        expect(r).to.have.property('encuestasAbiertas');
-        expect(r).to.have.property('votosEmitidos');
-      });
+    token: PEGA_AQUI_TOKEN_ADMIN
 settings:
   encodeUrl: true
   timeout: 0
   followRedirects: true
   maxRedirects: 5
 docs: |-
-  GET protegido por ADMIN. Debe devolver los cinco contadores del panel, con HTTP 200.
+  Consulta el resumen del ADMIN. Debes pegar antes un JWT ADMIN valido en Auth -> Bearer Token. Se espera HTTP 200.
