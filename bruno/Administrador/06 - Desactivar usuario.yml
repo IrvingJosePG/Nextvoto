@@ -4,7 +4,7 @@ info:
   seq: 6
 http:
   method: PATCH
-  url: '{{baseUrl}}/api/admin/usuarios/{{idUsuarioPrueba}}/estado'
+  url: 'http://localhost:8080/api/admin/usuarios/{{idUsuarioPrueba}}/estado'
   headers:
   - name: Content-Type
     value: application/json
