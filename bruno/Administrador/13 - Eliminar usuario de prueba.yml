@@ -4,7 +4,7 @@ info:
   seq: 13
 http:
   method: DELETE
-  url: '{{baseUrl}}/api/admin/usuarios/{{idUsuarioPrueba}}'
+  url: 'http://localhost:8080/api/admin/usuarios/{{idUsuarioPrueba}}'
   auth:
     type: bearer
     token: '{{tokenAdmin}}'
