@@ -1,0 +1,18 @@
+info:
+  name: LOGOUT
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: https://nextvoto.lat/api/auth/logout
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzM4NCJ9.eyJpZFVzdWFyaW8iOiI1Iiwicm9sIjoiVk9UQU5URSIsIm5vbWJyZSI6Ik1pZ3VlbCBTYW5kb3ZhbCBSZXllcyIsInN1YiI6Im1pZ3VlbEBuZXh0dm90by5jb20iLCJpYXQiOjE3OTU1ODAyMTcsImV4cCI6MTc5NTY2NjYxN30.5EIngZu7tDdE5IU5bOR8q-9iZjLb9or90YYlMlMBAdM-ZmA1cLsdL0zKnpSOw3-e
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

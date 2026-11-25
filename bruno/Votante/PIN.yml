@@ -1,11 +1,17 @@
 info:
-  name: CARGAR_ENCUESTA
+  name: PIN
   type: http
   seq: 5
 
 http:
-  method: GET
-  url: http://localhost:8080/api/votante/encuestas/4
+  method: POST
+  url: http://localhost:8080/api/votante/unirse
+  body:
+    type: json
+    data: |-
+      {
+        "codigoPin": "NV-3321"
+      }
   auth:
     type: bearer
     token: eyJhbGciOiJIUzM4NCJ9.eyJub21icmUiOiJQcnVlYmEgTmV4dFZvdG8iLCJyb2wiOiJWT1RBTlRFIiwic3ViIjoicHJ1ZWJhQG5leHR2b3RvLmNvbSIsImlhdCI6MTc5NTAxODE4NywiZXhwIjoxNzk1MTA0NTg3fQ.YApYnhmtR5pBV49m4k9TlcOYHQJAdG73H7TF_e81dRyKeqaXFESmQO9qMrcBSNOZ

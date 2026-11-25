@@ -2,7 +2,7 @@
 
 # NextVoto
 
-### Sistema Web de Gestión de Votaciones y Encuestas Institucionales
+### Sistema Web de Gestión de Votaciones y Encuestas
 
 **Materia:** Programación Web
 
@@ -12,7 +12,7 @@ Fernández López Jazmín<br>
 Sandoval Reyes Miguel
 
 [Repositorio](https://github.com/IrvingJosePG/Nextvoto) ·
-[Proyecto desplegado](https://TU_DOMINIO_VPS.com) ·
+[Proyecto desplegado](https://nextvoto.lat) ·
 [GitHub Projects](https://github.com/users/IrvingJosePG/projects/1) ·
 [Prototipo en Figma](https://www.figma.com/design/rvq9m6FT1Pln9oJB62RW2k/Act7_Mockup_Equipo?node-id=1-2&t=Hff8UcLxNUEqbYr3-1)
 
@@ -24,7 +24,7 @@ Sandoval Reyes Miguel
 
 - [Descripción del proyecto](#descripción-del-proyecto)
 - [Problemática que resuelve](#problemática-que-resuelve)
-- [Diseño e identidad visual (Figma)](#diseño-e-identidad-visual-figma)
+- [Diseño visual (Figma)](#diseño-visual-figma)
 - [Módulos principales](#módulos-principales)
 - [Roles del sistema](#roles-del-sistema)
 - [Tecnologías utilizadas](#tecnologías-utilizadas)
@@ -42,21 +42,20 @@ Sandoval Reyes Miguel
 
 ## Descripción del proyecto
 
-**NextVoto** es una plataforma web full-stack diseñada para crear, administrar y ejecutar procesos de votación y encuestas académicas o institucionales de manera segura, transparente y auditada.
+**NextVoto** es una plataforma web diseñada para crear, administrar y ejecutar procesos de votación y encuestas academicas de manera segura y transparente.
 
-El sistema gestiona el ciclo completo de participación mediante control de acceso basado en roles (**Administrador**, **Moderador** y **Votante**), generación de códigos PIN de acceso, validación de voto único por participante, resultados estadísticos en tiempo real y notificaciones automatizadas por correo electrónico, WhatsApp y SMS.
+El sistema gestiona el ciclo completo de participación mediante control de acceso basado en roles (**Administrador**, **Moderador** y **Votante**), generación de códigos PIN de acceso, validación de voto único por participante, resultados estadísticos en tiempo real y notificaciones automatizadas por correo electrónico y WhatsApp.
 
 ## Problemática que resuelve
 
-En entornos académicos e institucionales, muchas consultas y elecciones internas aún se realizan mediante formularios genéricos o conteos manuales que carecen de control de identidad, permiten respuestas duplicadas y dificultan la trazabilidad de los resultados.
+En entornos académicos e institucionales, muchas consultas y elecciones internas aún se realizan mediante conteos manuales que carecen de control de identidad, permiten respuestas duplicadas y dificultan la trazabilidad de los resultados.
 
-**NextVoto** resuelve esta problemática garantizando que únicamente usuarios autorizados participen en cada encuesta o votación, impidiendo el doble voto mediante restricciones relacionales, protegiendo las sesiones con tokens **JWT** y ofreciendo paneles de supervisión y resultados inmediatos.
+**NextVoto** resuelve esta problemática garantizando que únicamente usuarios autorizados participen en cada encuesta o votación, impidiendo el doble voto mediante restricciones, protegiendo las sesiones con tokens y ofreciendo paneles de supervisión y resultados inmediatos.
 
-## Diseño e identidad visual (Figma)
+## Diseño visual (Figma)
 
-- **Prototipo navegable:** Disponible en [Figma](https://www.figma.com/design/rvq9m6FT1Pln9oJB62RW2k/Act7_Mockup_Equipo?node-id=1-2&t=Hff8UcLxNUEqbYr3-1) con los flujos interactivos completos para **Administrador**, **Moderador** y **Votante**, incluyendo inicio de sesión, registro y recuperación de cuenta.
-- **Justificación de la paleta de colores:** Se fundamenta en la psicología y teoría del color aplicada a sistemas institucionales. El azul primario (`#1558BC`) y sus variantes claras (`#D9EBFF`) transmiten confianza, seriedad, transparencia y estabilidad; se combinan con fondos neutros (`#FFFFFF` y `#F8FAFC`) para maximizar la legibilidad y tonos verdes semánticos (`#15803D`) para confirmar votos emitidos y estados activos.
-- **Logotipo original:** Diseñado por el equipo integrando una urna electoral con una marca de verificación, manteniendo coherencia visual entre el prototipo de Figma y la interfaz implementada en React.
+- **Prototipo navegable:** Disponible en [Figma](https://www.figma.com/design/rvq9m6FT1Pln9oJB62RW2k/Act7_Mockup_Equipo?node-id=1-2&t=Hff8UcLxNUEqbYr3-1) con los flujos interactivos para **Administrador**, **Moderador** y **Votante**, incluyendo inicio de sesión, registro y recuperación de cuenta.
+- **Paleta de colores:** Se aplicadan colores a sistemas institucionales. El azul primario (`#1558BC`) y sus variantes claras (`#D9EBFF`) transmiten confianza y seriedad, se combinan con fondos neutros (`#FFFFFF` y `#F8FAFC`) para maximizar la legibilidad.
 
 ## Módulos principales
 
@@ -66,7 +65,7 @@ En entornos académicos e institucionales, muchas consultas y elecciones interna
 | **Panel de Administración** | Permite supervisar métricas globales del sistema, administrar cuentas de usuario (búsqueda paginada en servidor, creación, cambio de rol, suspensión/reactivación) y gestionar encuestas activas. |
 | **Encuestas y Votaciones** | Permite a los moderadores crear encuestas con múltiples preguntas y opciones, generar PIN de acceso, abrir o cerrar periodos de votación y consultar resultados. |
 | **Portal del Votante** | Permite canjear códigos PIN, visualizar encuestas disponibles, emitir un voto único por encuesta y consultar el historial personal de participación. |
-| **Notificaciones Multicanal** | Envía códigos de verificación y avisos reales por **correo electrónico** (Postfix en VPS), **WhatsApp** (CallMeBot API) y **SMS**. |
+| **Notificaciones Multicanal** | Envía códigos de verificación y avisos reales por **correo electrónico** (Postfix en VPS) y **WhatsApp** (CallMeBot API). |
 
 ## Roles del sistema
 
@@ -74,15 +73,15 @@ En entornos académicos e institucionales, muchas consultas y elecciones interna
 | :--- | :--- |
 | **Administrador** | Acceso total al sistema, métricas globales, CRUD y gestión de estado/roles de todos los usuarios, y supervisión o cierre de cualquier encuesta. |
 | **Moderador** | Creación y configuración de encuestas o votaciones, definición de preguntas/opciones, generación de PIN de participación, cierre y consulta de resultados. |
-| **Votante** | Acceso a encuestas asignadas o mediante PIN, emisión de voto único, edición de perfil propio y consulta de historial de participación. |
+| **Votante** | Acceso a encuestas asignadas o mediante PIN, emisión de voto único y consulta de historial de participación. |
 
 ## Tecnologías utilizadas
 
 **Backend:** Java 17 · Spring Boot 4.1.2 · Spring Security · JWT (JJWT 0.12.6) · Spring Data JPA / Hibernate · Bean Validation · Flyway<br>
-**Frontend:** React · Vite · React Router DOM · Tailwind CSS · CSS3 · Axios · Lucide React<br>
+**Frontend:** React · Vite · Tailwind CSS · CSS3 · Axios · Lucide React<br>
 **Base de datos:** MySQL 8<br>
-**Comunicación:** Postfix SMTP + JavaMailSender (SPF/DKIM) · CallMeBot API (WhatsApp) · SMS<br>
-**Infraestructura y Herramientas:** VPS Linux · Nginx · Certbot (Let's Encrypt SSL) · Systemd · Git · GitHub · Figma · Bruno
+**Comunicación:** Postfix SMTP + JavaMailSender (SPF/DKIM) · CallMeBot API (WhatsApp)<br>
+**Infraestructura y Herramientas:** VPS Linux · Nginx · Certbot · Systemd · Git · GitHub · Figma · Bruno
 
 ## Funciones principales
 
@@ -98,7 +97,7 @@ En entornos académicos e institucionales, muchas consultas y elecciones interna
 
 ## Base de datos
 
-El proyecto utiliza **MySQL 8** con control de versiones de esquema y datos semilla administrados mediante **Flyway** (`V1` y `V2`). El modelo relacional consta de **8 tablas normalizadas**, resolviendo la relación muchos a muchos (`N:M`) entre usuarios y encuestas a través de la tabla `participaciones`.
+El proyecto utiliza **MySQL 8** con control de versiones de esquema y datos semilla administrados mediante **Flyway** (`V1` y `V2`). El modelo relacional consta de **8 tablas normalizadas**.
 
 **Tablas principales:**
 
@@ -182,7 +181,7 @@ Las cuentas precargadas por las migraciones de Flyway utilizan la contraseña **
 **URL base en producción:**
 
 ```text
-https://TU_DOMINIO_VPS.com/api
+https://nextvoto.lat/api
 ```
 
 **URL base en desarrollo local:**
@@ -233,14 +232,12 @@ La colección de pruebas de la API se encuentra versionada dentro de la carpeta 
 * Flujo de solicitud y restablecimiento de contraseña
 * Casos de error por validación de campos (`400 Bad Request` / `422 Unprocessable Entity`)
 * Casos de error por token ausente, expirado o invalidado (`401 Unauthorized`)
-* Casos de acceso denegado por rol insuficiente (`403 Forbidden`)
 * Casos de recurso inexistente (`404 Not Found`)
 
 ## Comunicación con el usuario
 
-* **Correo electrónico (Postfix + JavaMailSender):** Servidor SMTP propio configurado directamente en el VPS con registros **SPF** y **DKIM** para garantizar la entrega en bandeja de entrada sin depender de servicios externos.
+* **Correo electrónico (Postfix + JavaMailSender):** Servidor SMTP propio configurado directamente en el VPS para garantizar la entrega en bandeja de entrada sin depender de servicios externos.
 * **WhatsApp (CallMeBot API):** Integrado en `NotificacionService` mediante `HttpClient` de Java 17 para el envío automatizado de códigos PIN temporales de recuperación de cuenta.
-* **SMS:** Canal de mensajería integrado para notificaciones operativas desde el backend.
 
 ## Despliegue
 
@@ -248,16 +245,16 @@ El sistema está desplegado en un **VPS Linux** propio sirviendo el frontend com
 
 | Recurso | Dirección |
 | --- | --- |
-| **Sitio web (HTTPS)** | `https://TU_DOMINIO_VPS.com` |
-| **URL base de la API** | `https://TU_DOMINIO_VPS.com/api` |
+| **Sitio web (HTTPS)** | `https://nextvoto.lat` |
+| **URL base de la API** | `https://nextvoto.lat/api` |
 
 ## Enlaces
 
 | Recurso | Link |
 | --- | --- |
 | **Repositorio de GitHub** | https://github.com/IrvingJosePG/Nextvoto |
-| **GitHub Projects (Público)** | https://github.com/users/IrvingJosePG/projects/TU_NUMERO_PROYECTO |
-| **Proyecto desplegado** | https://TU_DOMINIO_VPS.com |
+| **GitHub Projects (Público)** | https://github.com/users/IrvingJosePG/projects/1 |
+| **Proyecto desplegado** | https://nextvoto.lat |
 | **Prototipo de Figma** | https://www.figma.com/design/rvq9m6FT1Pln9oJB62RW2k/Act7_Mockup_Equipo?node-id=1-2&t=Hff8UcLxNUEqbYr3-1 |
 
 ---
