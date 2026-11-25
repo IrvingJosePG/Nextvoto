@@ -33,5 +33,8 @@ spring.mail.properties.mail.smtp.starttls.enable=false
 callmebot.api.url=https://api.callmebot.com/whatsapp.php
 callmebot.api.key=TU_CALLMEBOT_API_KEY
 
+# Google OAuth 2.0
+google.client.id=TU_ID_CLIENT.apps.googleusercontent.com
+
 # CORS Frontend
 app.cors.allowed-origins=http://localhost:5173

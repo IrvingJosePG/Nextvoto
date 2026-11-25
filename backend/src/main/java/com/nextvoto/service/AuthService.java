@@ -1,5 +1,10 @@
 package com.nextvoto.service;
 
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -10,7 +15,9 @@ import java.util.Date;
 import java.util.HexFormat;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,7 +25,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nextvoto.dto.auth.AuthResponse;
+import com.nextvoto.dto.auth.GoogleLoginRequest;
 import com.nextvoto.dto.auth.LoginRequest;
 import com.nextvoto.dto.auth.RecuperarPasswordRequest;
 import com.nextvoto.dto.auth.RegisterRequest;
@@ -42,6 +52,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthService {
 
+    // 12 caracteres de un alfabeto de 32 símbolos = 60 bits de entropía.
+    private static final String ALFABETO_CODIGO = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    private static final SecureRandom ALEATORIO_SEGURO = new SecureRandom();
+
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
     private final TokenRepository tokenRepository;
@@ -50,9 +64,15 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final NotificacionService notificacionService;
 
-    // 12 caracteres de un alfabeto de 32 símbolos = 60 bits de entropía.
-    private static final String ALFABETO_CODIGO = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    private static final SecureRandom ALEATORIO_SEGURO = new SecureRandom();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final HttpClient httpClient = HttpClient.newHttpClient();
+
+    @Value("${google.client.id}")
+    private String googleClientId;
+
+    // =========================================================================
+    // Flujos públicos de autenticación
+    // =========================================================================
 
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(
@@ -74,41 +94,32 @@ public class AuthService {
         return crearSesion(crearUsuario(request, "VOTANTE"));
     }
 
-    Usuario crearUsuario(RegisterRequest request, String rol) {
-        String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
-        if (usuarioRepository.existsByEmail(email)) {
-            throw new BusinessException("El correo electrónico ya está registrado");
+    @Transactional
+    public AuthResponse loginConGoogle(GoogleLoginRequest request) {
+        JsonNode payload = verificarTokenGoogle(request.getCredential());
+
+        String email = payload.path("email").asText("").trim().toLowerCase(Locale.ROOT);
+        if (email.isEmpty()) {
+            throw new BusinessException("Google no proporcionó un correo electrónico válido");
         }
 
-        Usuario nuevoUsuario = Usuario.builder()
-                .nombre(request.getNombre().trim())
-                .email(email)
-                .password(passwordEncoder.encode(request.getPassword()))
-                .telefono(request.getTelefono().trim())
-                .activo(true)
-                .rol(buscarRol(rol))
-                .build();
-
-        try {
-            return usuarioRepository.saveAndFlush(nuevoUsuario);
-        } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("El correo electrónico ya está registrado");
+        String nombreGoogle = payload.path("name").asText("").trim();
+        if (nombreGoogle.isEmpty()) {
+            nombreGoogle = email.substring(0, email.indexOf('@'));
         }
-    }
+        if (nombreGoogle.length() > 100) {
+            nombreGoogle = nombreGoogle.substring(0, 100);
+        }
 
-    Rol buscarRol(String rol) {
-        return rolRepository.findByNombre(rol)
-                .orElseThrow(() -> new ResourceNotFoundException("Rol " + rol + " no configurado"));
-    }
+        final String nombreFinal = nombreGoogle;
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseGet(() -> registrarUsuarioGoogle(nombreFinal, email));
 
-    private AuthResponse crearSesion(Usuario usuario) {
-        return AuthResponse.builder()
-                .token(jwtService.generateToken(usuario))
-                .idUsuario(usuario.getIdUsuario())
-                .nombre(usuario.getNombre())
-                .email(usuario.getEmail())
-                .rol(usuario.getRol().getNombre())
-                .build();
+        if (!usuario.getActivo()) {
+            throw new BusinessException("Tu cuenta se encuentra desactivada. Contacta al administrador.");
+        }
+
+        return crearSesion(usuario);
     }
 
     @Transactional
@@ -193,6 +204,110 @@ public class AuthService {
 
         // El código es de un solo uso. También se invalidan los anteriores.
         tokenRepository.deleteByUsuarioAndTipo(usuario, TipoToken.RECUPERACION);
+    }
+
+    // =========================================================================
+    // Métodos internos y auxiliares
+    // =========================================================================
+
+    Usuario crearUsuario(RegisterRequest request, String rol) {
+        String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
+        if (usuarioRepository.existsByEmail(email)) {
+            throw new BusinessException("El correo electrónico ya está registrado");
+        }
+
+        Usuario nuevoUsuario = Usuario.builder()
+                .nombre(request.getNombre().trim())
+                .email(email)
+                .password(passwordEncoder.encode(request.getPassword()))
+                .telefono(request.getTelefono().trim())
+                .activo(true)
+                .rol(buscarRol(rol))
+                .build();
+
+        try {
+            return usuarioRepository.saveAndFlush(nuevoUsuario);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException("El correo electrónico ya está registrado");
+        }
+    }
+
+    Rol buscarRol(String rol) {
+        return rolRepository.findByNombre(rol)
+                .orElseThrow(() -> new ResourceNotFoundException("Rol " + rol + " no configurado"));
+    }
+
+    private Usuario registrarUsuarioGoogle(String nombre, String email) {
+        Usuario nuevo = Usuario.builder()
+                .nombre(nombre)
+                .email(email)
+                .password(passwordEncoder.encode(UUID.randomUUID().toString()))
+                .telefono("0000000000")
+                .activo(true)
+                .rol(buscarRol("VOTANTE"))
+                .build();
+
+        try {
+            return usuarioRepository.saveAndFlush(nuevo);
+        } catch (DataIntegrityViolationException e) {
+            return usuarioRepository.findByEmail(email)
+                    .orElseThrow(() -> new BusinessException("No se pudo registrar la cuenta de Google"));
+        }
+    }
+
+    private JsonNode verificarTokenGoogle(String accessToken) {
+        try {
+            String tokenInfoUrl = "https://oauth2.googleapis.com/tokeninfo?access_token="
+                    + URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+
+            HttpRequest tokenInfoReq = HttpRequest.newBuilder()
+                    .uri(URI.create(tokenInfoUrl))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> tokenInfoRes = httpClient.send(tokenInfoReq, HttpResponse.BodyHandlers.ofString());
+            if (tokenInfoRes.statusCode() != 200) {
+                throw new BusinessException("El token de Google es inválido o ha expirado");
+            }
+
+            JsonNode tokenInfo = objectMapper.readTree(tokenInfoRes.body());
+            String audiencia = tokenInfo.path("aud").asText("");
+            JsonNode verifiedNode = tokenInfo.get("email_verified");
+            boolean emailVerificado = verifiedNode != null
+                    && ("true".equalsIgnoreCase(verifiedNode.asText()) || verifiedNode.asBoolean(false));
+
+            if (!googleClientId.equals(audiencia) || !emailVerificado) {
+                throw new BusinessException("La cuenta de Google no pudo ser verificada para NextVoto");
+            }
+
+            HttpRequest userInfoReq = HttpRequest.newBuilder()
+                    .uri(URI.create("https://www.googleapis.com/oauth2/v3/userinfo"))
+                    .header("Authorization", "Bearer " + accessToken)
+                    .GET()
+                    .build();
+
+            HttpResponse<String> userInfoRes = httpClient.send(userInfoReq, HttpResponse.BodyHandlers.ofString());
+            if (userInfoRes.statusCode() == 200) {
+                return objectMapper.readTree(userInfoRes.body());
+            }
+
+            return tokenInfo;
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error verificando token de Google: {}", e.getMessage());
+            throw new BusinessException("Error al comunicarse con Google para iniciar sesión");
+        }
+    }
+
+    private AuthResponse crearSesion(Usuario usuario) {
+        return AuthResponse.builder()
+                .token(jwtService.generateToken(usuario))
+                .idUsuario(usuario.getIdUsuario())
+                .nombre(usuario.getNombre())
+                .email(usuario.getEmail())
+                .rol(usuario.getRol().getNombre())
+                .build();
     }
 
     private String generarCodigoSeguro() {

@@ -39,6 +39,11 @@ export const AuthProvider = ({ children }) => {
     return guardarSesion(response.data);
   };
 
+  const loginGoogle = async (credential) => {
+    const response = await api.post('/auth/google', { credential });
+    return guardarSesion(response.data);
+  };
+
   const logout = async () => {
     try {
       await api.post('/auth/logout');
@@ -52,7 +57,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, loginGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );

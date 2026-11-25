@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nextvoto.dto.auth.AuthResponse;
+import com.nextvoto.dto.auth.GoogleLoginRequest;
 import com.nextvoto.dto.auth.LoginRequest;
 import com.nextvoto.dto.auth.MessageResponse;
 import com.nextvoto.dto.auth.RecuperarPasswordRequest;
@@ -61,5 +62,10 @@ public class AuthController {
     ) {
         authService.restablecerPassword(request);
         return ResponseEntity.ok(new MessageResponse("Contraseña actualizada correctamente"));
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> loginGoogle(@Valid @RequestBody GoogleLoginRequest request) {
+        return ResponseEntity.ok(authService.loginConGoogle(request));
     }
 }
