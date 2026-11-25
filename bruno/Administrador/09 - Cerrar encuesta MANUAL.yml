@@ -4,12 +4,18 @@ info:
   seq: 9
 http:
   method: PATCH
-  url: '{{baseUrl}}/api/admin/encuestas/{{idEncuestaPrueba}}/cerrar'
+  url: 'http://localhost:8080/api/admin/encuestas/{{idEncuestaPrueba}}/cerrar'
   auth:
     type: bearer
     token: '{{tokenAdmin}}'
 runtime:
   scripts:
+  - type: before-request
+    code: |-
+      const id = Number(bru.getVar('idEncuestaPrueba'));
+      if (!Number.isSafeInteger(id) || id <= 0) {
+        throw new Error('Primero configura idEncuestaPrueba con el ID de una encuesta descartable.');
+      }
   - type: tests
     code: |-
       test("HTTP 204", function () {
@@ -21,4 +27,4 @@ settings:
   followRedirects: true
   maxRedirects: 5
 docs: |-
-  PELIGRO: cambia activa=false en una encuesta real. La variable idEncuestaPrueba vale 0 por seguridad; cámbiala manualmente por una encuesta de prueba después de respaldar tu BD. Si queda en 0, se espera HTTP 404 y la prueba 204 fallará (intencional). No existe endpoint para reabrir.
+  PELIGRO: cambia activa=false en una encuesta real. No envíes esta petición sin configurar idEncuestaPrueba con una encuesta desechable. Usa exclusivamente una encuesta temporal y respalda la BD antes de probar. Si no se proporciona un ID válido, el script detiene la petición. No existe endpoint para reabrir.
