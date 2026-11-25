@@ -1,0 +1,39 @@
+info:
+  name: 18 - ADMIN no puede desactivarse devuelve 422
+  type: http
+  seq: 18
+http:
+  method: PATCH
+  url: 'http://localhost:8080/api/admin/usuarios/{{idUsuarioAdmin}}/estado'
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "activo": false
+      }
+  auth:
+    type: bearer
+    token: '{{tokenAdmin}}'
+runtime:
+  scripts:
+  - type: tests
+    code: |-
+      test('HTTP 422 - no puede desactivar su propia cuenta', function () {
+        expect(res.getStatus()).to.equal(422);
+      });
+      test('Mensaje de regla de negocio', function () {
+        const respuesta = res.getBody();
+        expect(respuesta.message).to.be.a('string');
+      });
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+docs: |-
+  Ejecuta 01 - Login ADMIN antes: alli se guardan tokenAdmin e idUsuarioAdmin en memoria.
+  Comprueba que AdminService impide desactivar la propia cuenta ADMIN.
+  Se espera HTTP 422. Esta solicitud no cambia la cuenta: el servidor la rechaza.
