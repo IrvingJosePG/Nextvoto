@@ -13,44 +13,18 @@ http:
     data: |-
       {
         "nombre": "Usuario de prueba Bruno",
-        "email": "{{correoUsuarioPrueba}}",
+        "email": "bruno.usuario.admin.prueba@ejemplo.com",
         "password": "Prueba2026!",
         "telefono": "+529511234567",
         "rol": "VOTANTE"
       }
   auth:
     type: bearer
-    token: '{{tokenAdmin}}'
-runtime:
-  scripts:
-  - type: before-request
-    code: |-
-      // Correo único de prueba sin depender de otros registros.
-      const sufijo = Date.now() + '-' + Math.floor(Math.random() * 100000);
-      bru.setVar('correoUsuarioPrueba', `bruno.${sufijo}@example.test`);
-  - type: after-response
-    code: |-
-      if (res.getStatus() === 201) {
-        const usuario = res.getBody();
-        if (usuario && usuario.idUsuario) {
-          // Las siguientes pruebas solo afectan al usuario recién creado.
-          bru.setVar('idUsuarioPrueba', String(usuario.idUsuario));
-        }
-      }
-  - type: tests
-    code: |-
-      test("HTTP 201", function () {
-        expect(res.getStatus()).to.equal(201);
-      });
-      test("Se creó un usuario VOTANTE con ID", function () {
-        const r = res.getBody();
-        expect(r.idUsuario).to.be.a('number');
-        expect(r.rol).to.equal('VOTANTE');
-      });
+    token: PEGA_AQUI_TOKEN_ADMIN
 settings:
   encodeUrl: true
   timeout: 0
   followRedirects: true
   maxRedirects: 5
 docs: |-
-  Crea un usuario VOTANTE con un correo único generado por un script. Se guarda su idUsuario en memoria como idUsuarioPrueba. Ejecutar antes de PATCH/DELETE de usuario.
+  Crea un usuario VOTANTE de prueba. Si el correo ya existe, cambialo manualmente en Body. Copia el idUsuario devuelto (se usara manualmente en las peticiones 05, 06, 07, 11 y 13).

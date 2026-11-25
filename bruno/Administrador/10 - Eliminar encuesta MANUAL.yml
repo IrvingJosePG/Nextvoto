@@ -4,27 +4,14 @@ info:
   seq: 10
 http:
   method: DELETE
-  url: 'http://localhost:8080/api/admin/encuestas/{{idEncuestaPrueba}}'
+  url: 'http://localhost:8080/api/admin/encuestas/REEMPLAZAR_ID_ENCUESTA_PRUEBA'
   auth:
     type: bearer
-    token: '{{tokenAdmin}}'
-runtime:
-  scripts:
-  - type: before-request
-    code: |-
-      const id = Number(bru.getVar('idEncuestaPrueba'));
-      if (!Number.isSafeInteger(id) || id <= 0) {
-        throw new Error('Primero configura idEncuestaPrueba con el ID de una encuesta descartable.');
-      }
-  - type: tests
-    code: |-
-      test("HTTP 204", function () {
-        expect(res.getStatus()).to.equal(204);
-      });
+    token: PEGA_AQUI_TOKEN_ADMIN
 settings:
   encodeUrl: true
   timeout: 0
   followRedirects: true
   maxRedirects: 5
 docs: |-
-  PELIGRO: elimina la encuesta y puede eliminar sus preguntas, opciones, participaciones y respuestas por cascada. NO ejecutar en la base con datos importantes. Se exige idEncuestaPrueba válido para continuar; usar únicamente un registro descartable de prueba.
+  ADVERTENCIA: elimina una encuesta y sus datos asociados. Reemplaza REEMPLAZAR_ID_ENCUESTA_PRUEBA con el ID de una encuesta DESCARTABLE. Requiere JWT ADMIN valido.

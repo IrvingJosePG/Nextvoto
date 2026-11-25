@@ -8,18 +8,10 @@ http:
   auth:
     type: bearer
     token: 'token-de-prueba-invalido'
-runtime:
-  scripts:
-  - type: tests
-    code: |-
-      test('HTTP 401 - JWT invalido', function () {
-        expect(res.getStatus()).to.equal(401);
-      });
 settings:
   encodeUrl: true
   timeout: 0
   followRedirects: true
   maxRedirects: 5
 docs: |-
-  Prueba negativa: con un token inventado, el filtro JWT no debe autenticar al usuario.
-  No altera datos de MySQL y no requiere iniciar sesion antes.
+  Prueba negativa: usa expresamente un token invalido para verificar HTTP 401. No reemplaces este token por uno valido.

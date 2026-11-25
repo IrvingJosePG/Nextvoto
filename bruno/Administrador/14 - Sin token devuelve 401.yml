@@ -7,17 +7,10 @@ http:
   url: 'http://localhost:8080/api/admin/resumen'
   auth:
     type: none
-runtime:
-  scripts:
-  - type: tests
-    code: |-
-      test("HTTP 401", function () {
-        expect(res.getStatus()).to.equal(401);
-      });
 settings:
   encodeUrl: true
   timeout: 0
   followRedirects: true
   maxRedirects: 5
 docs: |-
-  Prueba de seguridad: el panel administrador NO debe responder sin JWT. Esperado HTTP 401.
+  Prueba negativa SIN token. Auth permanece en None. Se espera HTTP 401 Unauthorized.

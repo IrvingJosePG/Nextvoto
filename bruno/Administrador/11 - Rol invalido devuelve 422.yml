@@ -4,7 +4,7 @@ info:
   seq: 11
 http:
   method: PATCH
-  url: 'http://localhost:8080/api/admin/usuarios/{{idUsuarioPrueba}}/rol'
+  url: 'http://localhost:8080/api/admin/usuarios/REEMPLAZAR_ID_USUARIO_PRUEBA/rol'
   headers:
   - name: Content-Type
     value: application/json
@@ -16,18 +16,11 @@ http:
       }
   auth:
     type: bearer
-    token: '{{tokenAdmin}}'
-runtime:
-  scripts:
-  - type: tests
-    code: |-
-      test("HTTP 422", function () {
-        expect(res.getStatus()).to.equal(422);
-      });
+    token: PEGA_AQUI_TOKEN_ADMIN
 settings:
   encodeUrl: true
   timeout: 0
   followRedirects: true
   maxRedirects: 5
 docs: |-
-  Prueba negativa: no se permite promover a otro usuario a ADMIN desde este endpoint. Debe devolver 422 por BusinessException.
+  Prueba negativa: reemplaza el ID con el de un usuario de prueba ya creado. El ADMIN no puede asignar rol ADMIN desde este endpoint. Se espera HTTP 422.

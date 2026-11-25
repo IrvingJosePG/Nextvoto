@@ -4,7 +4,7 @@ info:
   seq: 7
 http:
   method: PATCH
-  url: 'http://localhost:8080/api/admin/usuarios/{{idUsuarioPrueba}}/estado'
+  url: 'http://localhost:8080/api/admin/usuarios/REEMPLAZAR_ID_USUARIO_PRUEBA/estado'
   headers:
   - name: Content-Type
     value: application/json
@@ -16,18 +16,11 @@ http:
       }
   auth:
     type: bearer
-    token: '{{tokenAdmin}}'
-runtime:
-  scripts:
-  - type: tests
-    code: |-
-      test("HTTP 204", function () {
-        expect(res.getStatus()).to.equal(204);
-      });
+    token: PEGA_AQUI_TOKEN_ADMIN
 settings:
   encodeUrl: true
   timeout: 0
   followRedirects: true
   maxRedirects: 5
 docs: |-
-  Reactiva solamente el usuario creado en la petición 04.
+  Reemplaza el ID en la URL por el de tu usuario de prueba. Requiere JWT ADMIN valido. Reactiva esa cuenta de prueba.

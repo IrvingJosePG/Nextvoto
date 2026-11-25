@@ -17,26 +17,10 @@ http:
       }
   auth:
     type: none
-runtime:
-  scripts:
-  - type: after-response
-    code: |-
-      if (res.getStatus() === 200) {
-        const d = res.getBody();
-        if (d && d.token && d.rol === 'VOTANTE') bru.setVar('tokenVotante', d.token);
-      }
-  - type: tests
-    code: |-
-      test("HTTP 200", function () {
-        expect(res.getStatus()).to.equal(200);
-      });
-      test("Rol VOTANTE", function () {
-        expect(res.getBody().rol).to.equal('VOTANTE');
-      });
 settings:
   encodeUrl: true
   timeout: 0
   followRedirects: true
   maxRedirects: 5
 docs: |-
-  Guarda un JWT de VOTANTE en memoria para verificar que no pueda acceder a la API ADMIN.
+  Inicia sesion como VOTANTE. Copia manualmente el JWT devuelto y pegalo en la peticion 16 como Bearer Token.

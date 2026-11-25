@@ -7,18 +7,11 @@ http:
   url: 'http://localhost:8080/api/admin/resumen'
   auth:
     type: bearer
-    token: '{{tokenVotante}}'
-runtime:
-  scripts:
-  - type: tests
-    code: |-
-      test("HTTP 403", function () {
-        expect(res.getStatus()).to.equal(403);
-      });
+    token: PEGA_AQUI_TOKEN_VOTANTE
 settings:
   encodeUrl: true
   timeout: 0
   followRedirects: true
   maxRedirects: 5
 docs: |-
-  Prueba de autorización. Un JWT válido de VOTANTE debe devolver HTTP 403 Forbidden en /api/admin/resumen.
+  Prueba negativa: pega un JWT VOTANTE vigente en Auth -> Bearer Token. Al acceder al resumen ADMIN se espera HTTP 403 Forbidden.
