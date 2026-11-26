@@ -1,14 +1,14 @@
 const COLORES_PASTEL = [
-  '#2563eb', // blue-600
-  '#0284c7', // sky-600
-  '#4f46e5', // indigo-600
-  '#0d9488', // teal-600
-  '#d97706', // amber-600
-  '#e11d48', // rose-600
-  '#7c3aed', // violet-600
-  '#059669', // emerald-600
-  '#ea580c', // orange-600
-  '#475569', // slate-600
+  '#2563eb', // Azul vibrante (blue-600)
+  '#10b981', // Verde esmeralda (emerald-500)
+  '#f59e0b', // Ámbar / Dorado (amber-500)
+  '#f43f5e', // Coral / Rojo (rose-500)
+  '#8b5cf6', // Violeta (violet-500)
+  '#06b6d4', // Cian / Turquesa (cyan-500)
+  '#f97316', // Naranja (orange-500)
+  '#14b8a6', // Verde azulado (teal-500)
+  '#ec4899', // Magenta (pink-500)
+  '#64748b', // Gris pizarra (slate-500)
 ];
 
 function calcularRutaRebanada(cx, cy, radio, anguloInicio, anguloFin) {

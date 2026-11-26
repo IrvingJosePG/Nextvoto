@@ -191,10 +191,10 @@ export default function ResultadosVotante() {
       <div className="flex justify-center pt-2">
         <button
           type="button"
-          onClick={() => navigate('/votante')}
+          onClick={() => navigate('/votante/historial')}
           className="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-bold text-base sm:text-lg px-10 py-3.5 rounded-full shadow-sm transition-all cursor-pointer"
         >
-          Volver al Inicio
+          Volver a Resultados
         </button>
       </div>
     </div>
