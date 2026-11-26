@@ -1,11 +1,11 @@
 package com.nextvoto.service;
 
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -29,11 +29,14 @@ public class NotificacionService {
     @Value("${spring.mail.username}")
     private String mailFrom;
 
-    @Value("${callmebot.api.url}")
-    private String callMeBotUrl;
+    @Value("${smsgate.api.url}")
+    private String smsGateApiUrl;
 
-    @Value("${callmebot.api.key}")
-    private String callMeBotApiKey;
+    @Value("${smsgate.username}")
+    private String smsGateUsername;
+
+    @Value("${smsgate.password}")
+    private String smsGatePassword;
 
     public void enviarPinCorreo(String emailDestino, String nombreUsuario, String pin) {
         try {
@@ -65,58 +68,71 @@ public class NotificacionService {
     }
 
     public void enviarPinWhatsApp(String telefonoDestino, String nombreUsuario, String pin) {
-        String texto = "Hola " + nombreUsuario + ", tu código de recuperación de NextVoto es: *" + pin + "*. Válido por 15 minutos.";
-        enviarWhatsApp(telefonoDestino, texto);
+        String texto = "Hola " + nombreUsuario + ", tu codigo de recuperacion de NextVoto es: " + pin + ". Valido por 15 minutos.";
+        enviarSms(telefonoDestino, texto);
     }
 
-    public void enviarWhatsApp(String telefonoDestino, String mensaje) {
+    public void enviarSms(String telefonoDestino, String mensaje) {
         if (telefonoDestino == null || telefonoDestino.isBlank()) {
             throw new BusinessException("El usuario no tiene un número de teléfono registrado.");
         }
 
         try {
-            String numeroFormateado = formatearWhatsAppMexico(telefonoDestino);
-            String mensajeCodificado = URLEncoder.encode(mensaje, StandardCharsets.UTF_8);
+            String numeroDestino = formatearSmsMexico(telefonoDestino);
+            String endpoint = smsGateApiUrl.replaceAll("/+$", "") + "/message";
 
-            String endpoint = String.format(
-                "%s?phone=%s&text=%s&apikey=%s",
-                callMeBotUrl,
-                numeroFormateado,
-                mensajeCodificado,
-                callMeBotApiKey
-            );
+            String textoSeguro = mensaje
+                    .replace("\\", "\\\\")
+                    .replace("\"", "\\\"")
+                    .replace("\n", "\\n")
+                    .replace("\r", "");
+
+            String jsonBody = """
+                {
+                  "textMessage": {
+                    "text": "%s"
+                  },
+                  "phoneNumbers": ["%s"]
+                }
+                """.formatted(textoSeguro, numeroDestino);
+
+            String credenciales = smsGateUsername + ":" + smsGatePassword;
+            String basicAuth = "Basic " + Base64.getEncoder()
+                    .encodeToString(credenciales.getBytes(StandardCharsets.UTF_8));
 
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(endpoint))
-                .GET()
-                .build();
+                    .uri(URI.create(endpoint))
+                    .header("Authorization", basicAuth)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))
+                    .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-            if (response.statusCode() != 200 || (response.body() != null && response.body().contains("ERROR"))) {
-                log.error("Respuesta de error de CallMeBot ({}): {}", response.statusCode(), response.body());
-                throw new BusinessException("No se pudo entregar el mensaje de WhatsApp mediante CallMeBot.");
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                log.error("Error de SMSGate ({}): {}", response.statusCode(), response.body());
+                throw new BusinessException("No se pudo entregar el SMS mediante la pasarela móvil.");
             }
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
-            log.error("Error enviando WhatsApp a {}: {}", telefonoDestino, e.getMessage());
-            throw new BusinessException("No se pudo enviar el mensaje de WhatsApp. Verifica que el número esté activado en CallMeBot.");
+            log.error("Error enviando SMS a {}: {}", telefonoDestino, e.getMessage());
+            throw new BusinessException("No se pudo enviar el mensaje SMS.");
         }
     }
 
-    // CallMeBot requiere 521 + 10 dígitos (sin signo +) para celulares de México
-    private String formatearWhatsAppMexico(String telefono) {
+    // SMS en México utiliza +52 + 10 dígitos (sin el 1 intermedio de WhatsApp)
+    private String formatearSmsMexico(String telefono) {
         String digitos = telefono.replaceAll("[^0-9]", "");
         if (digitos.startsWith("521") && digitos.length() == 13) {
-            return digitos;
+            return "+52" + digitos.substring(3);
         }
         if (digitos.startsWith("52") && digitos.length() == 12) {
-            return "521" + digitos.substring(2);
+            return "+" + digitos;
         }
         if (digitos.length() == 10) {
-            return "521" + digitos;
+            return "+52" + digitos;
         }
-        return digitos;
+        return "+" + digitos;
     }
 }

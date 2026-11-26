@@ -52,8 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthService {
 
-    // 12 caracteres de un alfabeto de 32 símbolos = 60 bits de entropía.
-    private static final String ALFABETO_CODIGO = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    // 6 dígitos numéricos con formato 123-456.
     private static final SecureRandom ALEATORIO_SEGURO = new SecureRandom();
 
     private final UsuarioRepository usuarioRepository;
@@ -176,7 +175,7 @@ public class AuthService {
         // Revoca códigos anteriores y almacena únicamente el hash del nuevo código.
         tokenRepository.deleteByUsuarioAndTipo(usuario, TipoToken.RECUPERACION);
         Token tokenRec = Token.builder()
-                .token(hashCodigo(codigoRecuperacion))
+                .token(hashCodigo(normalizarCodigo(codigoRecuperacion)))
                 .tipo(TipoToken.RECUPERACION)
                 .expiracion(LocalDateTime.now().plusMinutes(15))
                 .usuario(usuario)
@@ -192,7 +191,7 @@ public class AuthService {
 
     @Transactional
     public void restablecerPassword(RestablecerPasswordRequest request) {
-        String codigo = request.getToken().trim().toUpperCase(Locale.ROOT);
+        String codigo = normalizarCodigo(request.getToken());
         Token tokenValido = tokenRepository
                 .findByTokenAndTipoAndExpiracionAfter(
                         hashCodigo(codigo), TipoToken.RECUPERACION, LocalDateTime.now())
@@ -311,11 +310,16 @@ public class AuthService {
     }
 
     private String generarCodigoSeguro() {
-        StringBuilder codigo = new StringBuilder(12);
-        for (int i = 0; i < 12; i++) {
-            codigo.append(ALFABETO_CODIGO.charAt(ALEATORIO_SEGURO.nextInt(ALFABETO_CODIGO.length())));
+        int parte1 = ALEATORIO_SEGURO.nextInt(1000);
+        int parte2 = ALEATORIO_SEGURO.nextInt(1000);
+        return String.format("%03d-%03d", parte1, parte2);
+    }
+
+    private String normalizarCodigo(String codigo) {
+        if (codigo == null) {
+            return "";
         }
-        return codigo.toString();
+        return codigo.replaceAll("[\\s-]+", "").trim().toUpperCase(Locale.ROOT);
     }
 
     private String hashCodigo(String codigo) {

@@ -29,9 +29,10 @@ spring.mail.password=
 spring.mail.properties.mail.smtp.auth=false
 spring.mail.properties.mail.smtp.starttls.enable=false
 
-# CallMeBot (Notificaciones WhatsApp)
-callmebot.api.url=https://api.callmebot.com/whatsapp.php
-callmebot.api.key=TU_CALLMEBOT_API_KEY
+# SMS Gateway Android (Notificaciones SMS)
+smsgate.api.url=https://api.sms-gate.app/3rdparty/v1
+smsgate.username=TU_USUARIO_SMSGATE
+smsgate.password=TU_PASSWORD_SMSGATE
 
 # Google OAuth 2.0
 google.client.id=TU_ID_CLIENT.apps.googleusercontent.com
