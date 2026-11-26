@@ -3,6 +3,7 @@ package com.nextvoto.dto.moderador;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.nextvoto.dto.moderador.ModeradorDTO.PreguntaResultado;
 import com.nextvoto.entity.Encuesta.TipoEncuesta;
 import com.nextvoto.entity.Participacion.EstadoParticipacion;
 import com.nextvoto.entity.TipoRespuesta;
@@ -35,9 +36,9 @@ public class ModeradorDTO {
     public record PreguntaResultado(Long idPregunta, String texto, List<OpcionResultado> opciones) {
     }
 
-    public record Resultados(Long idEncuesta, String titulo, TipoEncuesta tipo, String codigoPin,
-            LocalDateTime fechaLimite, boolean activa, boolean abierta, long totalParticipantes,
-            List<PreguntaResultado> preguntas) {
+    public record Resultados(Long idEncuesta, String titulo, TipoEncuesta tipo, String tipoGrafica,
+            String codigoPin, LocalDateTime fechaLimite, boolean activa, boolean abierta,
+            long totalParticipantes, List<PreguntaResultado> preguntas) {
     }
 
     // Una fila = una persona dentro de un cuestionario del moderador.
@@ -77,10 +78,9 @@ public class ModeradorDTO {
             @Size(max = 2000, message = "La descripción no puede pasar de 2000 caracteres")
             String descripcion,
 
-            @NotNull(message = "Selecciona el tipo: votación, encuesta o cuestionario")
+            @NotNull(message = "Selecciona el tipo: votación o encuesta")
             TipoEncuesta tipo,
 
-            @NotBlank(message = "Escribe a quién va dirigido")
             @Size(max = 150, message = "El campo «dirigido a» no puede pasar de 150 caracteres")
             String dirigidoA,
 
@@ -107,7 +107,7 @@ public class ModeradorDTO {
             String tipoGrafica,
 
             @NotEmpty(message = "Agrega al menos una pregunta")
-            @Size(max = 15, message = "Un cuestionario admite máximo 15 preguntas")
+            @Size(max = 15, message = "Una encuesta admite máximo 15 preguntas")
             @Valid
             List<NuevaPregunta> preguntas) {
     }

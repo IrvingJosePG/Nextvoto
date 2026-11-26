@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import api from '../../api/axiosConfig';
+import GraficaPastel from '../ui/GraficaPastel';
 
 const textoVotos = (n) => `${n} ${n === 1 ? 'voto' : 'votos'}`;
 
@@ -55,6 +56,7 @@ export default function TarjetaGrafica({ titulo, lista, orientacion, vacioTitulo
     );
   }
 
+  const esPastel = (datos?.tipoGrafica || '').toUpperCase() === 'PASTEL';
   const preguntas = datos?.preguntas ?? [];
   const pregunta = preguntas[idxPregunta] ?? preguntas[0];
   const opciones = pregunta?.opciones ?? [];
@@ -117,6 +119,8 @@ export default function TarjetaGrafica({ titulo, lista, orientacion, vacioTitulo
 
           {totalVotos === 0 ? (
             <p className="text-sm text-slate-500 py-8 text-center">{resumen}</p>
+          ) : esPastel ? (
+            <GraficaPastel opciones={opciones} compacto />
           ) : orientacion === 'vertical' ? (
             <div className="flex items-stretch gap-3 h-44">
               {opciones.map((op) => (

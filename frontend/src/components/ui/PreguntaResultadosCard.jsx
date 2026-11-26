@@ -1,11 +1,15 @@
 import { BarraResultado } from './BarraResultado';
+import GraficaPastel from './GraficaPastel';
 
 export const PreguntaResultadosCard = ({
   estadoTexto = 'Elección Activa',
   enunciado,
   opciones = [],
   idOpcionSeleccionada = null,
+  tipoGrafica = 'BARRAS',
 }) => {
+  const esPastel = (tipoGrafica || '').toUpperCase() === 'PASTEL';
+
   const totalVotosPregunta = opciones.reduce(
     (acc, op) => acc + Number(op.votos ?? op.totalVotos ?? 0),
     0
@@ -28,40 +32,43 @@ export const PreguntaResultadosCard = ({
         </h2>
       </div>
 
-      {/* Lista de barras de resultado */}
-      <div className="space-y-4">
-        {opciones.map((opcion) => {
-          const votos = Number(opcion.votos ?? opcion.totalVotos ?? 0);
-          const porcentajeCalculado =
-            opcion.porcentaje !== undefined && opcion.porcentaje !== null
-              ? Number(opcion.porcentaje)
-              : totalVotosPregunta > 0
-              ? (votos / totalVotosPregunta) * 100
-              : 0;
+      {esPastel ? (
+        <GraficaPastel opciones={opciones} idOpcionSeleccionada={idOpcionSeleccionada} />
+      ) : (
+        <div className="space-y-4">
+          {opciones.map((opcion) => {
+            const votos = Number(opcion.votos ?? opcion.totalVotos ?? 0);
+            const porcentajeCalculado =
+              opcion.porcentaje !== undefined && opcion.porcentaje !== null
+                ? Number(opcion.porcentaje)
+                : totalVotosPregunta > 0
+                ? (votos / totalVotosPregunta) * 100
+                : 0;
 
-          const esGanadora = maxVotos > 0 && votos === maxVotos;
-          const esTuEleccion = Boolean(
-            opcion.seleccionada ||
-              opcion.esMiVoto ||
-              opcion.miVoto ||
-              opcion.votada ||
-              opcion.elegida ||
-              (idOpcionSeleccionada !== null &&
-                Number(idOpcionSeleccionada) === Number(opcion.idOpcion))
-          );
+            const esGanadora = maxVotos > 0 && votos === maxVotos;
+            const esTuEleccion = Boolean(
+              opcion.seleccionada ||
+                opcion.esMiVoto ||
+                opcion.miVoto ||
+                opcion.votada ||
+                opcion.elegida ||
+                (idOpcionSeleccionada !== null &&
+                  Number(idOpcionSeleccionada) === Number(opcion.idOpcion))
+            );
 
-          return (
-            <BarraResultado
-              key={opcion.idOpcion}
-              etiqueta={opcion.texto ?? opcion.descripcion}
-              votos={votos}
-              porcentaje={porcentajeCalculado}
-              esGanadora={esGanadora}
-              esTuEleccion={esTuEleccion}
-            />
-          );
-        })}
-      </div>
+            return (
+              <BarraResultado
+                key={opcion.idOpcion}
+                etiqueta={opcion.texto ?? opcion.descripcion}
+                votos={votos}
+                porcentaje={porcentajeCalculado}
+                esGanadora={esGanadora}
+                esTuEleccion={esTuEleccion}
+              />
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

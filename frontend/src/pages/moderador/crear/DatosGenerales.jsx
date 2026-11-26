@@ -1,5 +1,6 @@
 import { Input } from '../../../components/ui';
 import Seccion from './Seccion';
+import DateTimePicker from '../../../components/ui/DateTimePicker';
 
 export default function DatosGenerales({ form, cambiar }) {
   return (
@@ -14,19 +15,17 @@ export default function DatosGenerales({ form, cambiar }) {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <Input
+        <DateTimePicker
           id="fechaInicio"
-          type="datetime-local"
           label="Fecha y hora de inicio"
           value={form.fechaInicio}
-          onChange={(e) => cambiar('fechaInicio', e.target.value)}
+          onChange={(valor) => cambiar('fechaInicio', valor)}
         />
-        <Input
+        <DateTimePicker
           id="fechaLimite"
-          type="datetime-local"
           label="Fecha y hora límite"
           value={form.fechaLimite}
-          onChange={(e) => cambiar('fechaLimite', e.target.value)}
+          onChange={(valor) => cambiar('fechaLimite', valor)}
         />
       </div>
 

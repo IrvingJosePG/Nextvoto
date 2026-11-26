@@ -6,6 +6,7 @@ const ESTILOS_ESTADO = {
 
 export const CuestionarioCard = ({
   titulo,
+  descripcion,
   codigoPin,
   etiquetaCierre,
   urgente = false,
@@ -24,6 +25,12 @@ export const CuestionarioCard = ({
         <h3 className="text-xl font-bold text-slate-900 leading-snug line-clamp-2">
           {titulo}
         </h3>
+
+        {descripcion && (
+          <p className="text-sm text-slate-500 mt-2 line-clamp-2">
+            {descripcion}
+          </p>
+        )}
 
         {estadoBadge && (
           <span

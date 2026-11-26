@@ -142,7 +142,12 @@ export default function BoletaVotacion() {
         <h1 className="text-2xl sm:text-4xl font-extrabold text-blue-700 tracking-tight">
           {encuesta.titulo}
         </h1>
-        <ul className="mt-1.5 pl-5 list-disc text-sm sm:text-base font-medium text-slate-800">
+          {encuesta.descripcion && (
+             <p className="text-sm sm:text-base text-slate-600 mt-2 leading-relaxed">
+              {encuesta.descripcion}
+             </p>
+             )}
+        <ul className="mt-2 pl-5 list-disc text-sm sm:text-base font-medium text-slate-800">
           <li>Responde con cuidado, solo tienes un intento</li>
         </ul>
       </div>

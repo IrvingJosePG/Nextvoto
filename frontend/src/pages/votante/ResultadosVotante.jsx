@@ -126,6 +126,11 @@ export default function ResultadosVotante() {
         <p className="text-sm sm:text-base font-medium text-slate-700">
           {etiquetaSubtitulo}: {fechaSubtitulo}
         </p>
+        {resultado.descripcion && (
+          <p className="text-sm text-slate-500 max-w-2xl mx-auto pt-1">
+            {resultado.descripcion}
+          </p>
+        )}
       </div>
 
       {/* Tarjeta resumen de 3 columnas */}
@@ -176,6 +181,7 @@ export default function ResultadosVotante() {
               enunciado={pregunta.texto ?? pregunta.enunciado}
               opciones={pregunta.opciones || []}
               idOpcionSeleccionada={idElegido}
+              tipoGrafica={resultado.tipoGrafica}
             />
           );
         })}

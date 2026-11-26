@@ -97,7 +97,7 @@ public class ModeradorService {
                 .titulo(datos.titulo().trim())
                 .descripcion(limpiar(datos.descripcion()))
                 .tipo(datos.tipo())
-                .dirigidoA(datos.dirigidoA().trim())
+                .dirigidoA(limpiar(datos.dirigidoA()))
                 .tipoVoto(datos.tipoVoto())
                 .permiteComentarios(datos.permiteComentarios())
                 .maxParticipantes(datos.maxParticipantes())
@@ -195,8 +195,8 @@ public class ModeradorService {
         }
 
         return new Resultados(
-                encuesta.getIdEncuesta(), encuesta.getTitulo(), encuesta.getTipo(), encuesta.getCodigoPin(),
-                encuesta.getFechaLimite(), Boolean.TRUE.equals(encuesta.getActiva()),
+                encuesta.getIdEncuesta(), encuesta.getTitulo(), encuesta.getTipo(), encuesta.getTipoGrafica(),
+                encuesta.getCodigoPin(), encuesta.getFechaLimite(), Boolean.TRUE.equals(encuesta.getActiva()),
                 encuesta.estaAbierta(LocalDateTime.now()),
                 contar(encuesta, EstadoParticipacion.COMPLETADA), preguntas);
     }
@@ -250,7 +250,7 @@ public class ModeradorService {
 
         if (datos.tipo() == TipoEncuesta.VOTACION && datos.preguntas().size() != 1) {
             throw new BusinessException(
-                    "Una votación tiene exactamente 1 pregunta. Si necesitas varias, crea una encuesta o un cuestionario.");
+                    "Una votación tiene exactamente 1 pregunta. Si necesitas varias, crea una encuesta.");
         }
 
         for (NuevaPregunta pregunta : datos.preguntas()) {

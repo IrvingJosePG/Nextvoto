@@ -286,10 +286,13 @@ public class VotanteService {
         return ResultadoVotanteDTO.builder()
                 .idEncuesta(encuesta.getIdEncuesta())
                 .titulo(encuesta.getTitulo())
-                .tipo(encuesta.getTipo().name())
+                .descripcion(encuesta.getDescripcion())
+                .tipoGrafica(encuesta.getTipoGrafica())
                 .totalParticipantes(totalParticipantes)
                 .preguntas(preguntasRes)
-                .build();
+                .fechaLimite(encuesta.getFechaLimite())
+                .fechaVoto(participacion.getFechaVoto())
+                .build();        
     }
 
     private ParticipacionDTO toParticipacionDTO(Participacion p) {

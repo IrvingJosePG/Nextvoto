@@ -20,9 +20,7 @@ const formInicial = {
   tipo: 'VOTACION',
   dirigidoA: '',
   tipoVoto: 'ANONIMO',
-  permiteComentarios: false,
   maxParticipantes: '',
-  soloRegistrados: true,
   tipoGrafica: 'BARRAS',
 };
 
@@ -57,11 +55,11 @@ export default function ModeradorCrear() {
       titulo: form.titulo.trim(),
       descripcion: form.descripcion.trim() || null,
       tipo: form.tipo,
-      dirigidoA: form.dirigidoA.trim(),
+      dirigidoA: null,
       tipoVoto: form.tipoVoto,
-      permiteComentarios: form.permiteComentarios,
+      permiteComentarios: false,
       maxParticipantes: form.maxParticipantes === '' ? null : Number(form.maxParticipantes),
-      soloRegistrados: form.soloRegistrados,
+      soloRegistrados: true,
       fechaInicio: conSegundos(form.fechaInicio),
       fechaLimite: conSegundos(form.fechaLimite),
       tipoGrafica: form.tipoGrafica,
@@ -81,7 +79,7 @@ export default function ModeradorCrear() {
     } catch (err) {
       const data = err.response?.data;
       const detalle = data?.errors ? Object.values(data.errors).join(' · ') : '';
-      setError(detalle || data?.message || 'No se pudo crear el cuestionario.');
+      setError(detalle || data?.message || 'No se pudo crear la encuesta.');
     } finally {
       setEnviando(false);
     }
@@ -136,7 +134,7 @@ export default function ModeradorCrear() {
           Cancelar
         </Button>
         <Button type="submit" isLoading={enviando} className="px-8 py-3">
-          Crear cuestionario
+          Crear encuesta
         </Button>
       </div>
     </form>

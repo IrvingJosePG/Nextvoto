@@ -3,11 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, Copy, Check } from 'lucide-react';
 import api from '../../api/axiosConfig';
 import { Badge } from '../../components/ui';
+import GraficaPastel from '../../components/ui/GraficaPastel';
 
 const formatearFecha = (f) =>
   f ? new Date(f).toLocaleString('es-MX', { dateStyle: 'long', timeStyle: 'short' }) : '—';
 
-function GraficaPregunta({ estadoTexto, enunciado, opciones }) {
+function GraficaPregunta({ estadoTexto, enunciado, opciones, tipoGrafica }) {
+  const esPastel = (tipoGrafica || '').toUpperCase() === 'PASTEL';
   const maxVotos = Math.max(...opciones.map((o) => o.votos), 0);
 
   return (
@@ -17,37 +19,41 @@ function GraficaPregunta({ estadoTexto, enunciado, opciones }) {
         <h2 className="text-sm sm:text-base font-medium text-slate-500">{enunciado}</h2>
       </div>
 
-      <div className="overflow-x-auto">
-        <div className="flex items-end gap-4 min-w-max sm:min-w-0 sm:justify-around">
-          {opciones.map((op) => {
-            const esGanadora = maxVotos > 0 && op.votos === maxVotos;
-            return (
-              <div key={op.idOpcion} className="flex flex-col items-center w-20 sm:w-24 shrink-0">
-                <span className="text-xs sm:text-sm font-bold text-slate-800 mb-1 tabular-nums">
-                  {Math.round(op.porcentaje)}%
-                </span>
-                <div className="h-52 w-full flex items-end">
-                  <div
-                    style={{ height: `${Math.max(op.porcentaje, 3)}%` }}
-                    className={`w-full rounded-t-xl transition-all duration-500 ${
-                      esGanadora ? 'bg-blue-600' : 'bg-[#dbe7fb]'
-                    }`}
-                  />
+      {esPastel ? (
+        <GraficaPastel opciones={opciones} />
+      ) : (
+        <div className="overflow-x-auto">
+          <div className="flex items-end gap-4 min-w-max sm:min-w-0 sm:justify-around">
+            {opciones.map((op) => {
+              const esGanadora = maxVotos > 0 && op.votos === maxVotos;
+              return (
+                <div key={op.idOpcion} className="flex flex-col items-center w-20 sm:w-24 shrink-0">
+                  <span className="text-xs sm:text-sm font-bold text-slate-800 mb-1 tabular-nums">
+                    {Math.round(op.porcentaje)}%
+                  </span>
+                  <div className="h-52 w-full flex items-end">
+                    <div
+                      style={{ height: `${Math.max(op.porcentaje, 3)}%` }}
+                      className={`w-full rounded-t-xl transition-all duration-500 ${
+                        esGanadora ? 'bg-blue-600' : 'bg-[#dbe7fb]'
+                      }`}
+                    />
+                  </div>
+                  <span
+                    title={op.texto}
+                    className="mt-3 text-xs text-slate-700 font-medium text-center leading-tight line-clamp-2 break-words w-full"
+                  >
+                    {op.texto}
+                  </span>
+                  <span className="text-[11px] text-slate-500 mt-0.5">
+                    {op.votos} {op.votos === 1 ? 'voto' : 'votos'}
+                  </span>
                 </div>
-                <span
-                  title={op.texto}
-                  className="mt-3 text-xs text-slate-700 font-medium text-center leading-tight line-clamp-2 break-words w-full"
-                >
-                  {op.texto}
-                </span>
-                <span className="text-[11px] text-slate-500 mt-0.5">
-                  {op.votos} {op.votos === 1 ? 'voto' : 'votos'}
-                </span>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -154,6 +160,7 @@ export default function ModeradorResultados() {
             estadoTexto={`Pregunta ${i + 1} de ${data.preguntas.length}`}
             enunciado={p.texto}
             opciones={p.opciones}
+             tipoGrafica={data.tipoGrafica}
           />
         ))}
       </div>

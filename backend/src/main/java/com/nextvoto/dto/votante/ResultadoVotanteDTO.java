@@ -1,5 +1,6 @@
 package com.nextvoto.dto.votante;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -14,10 +15,12 @@ import lombok.NoArgsConstructor;
 public class ResultadoVotanteDTO {
     private Long idEncuesta;
     private String titulo;
-    private String tipo;
+    private String descripcion;
+    private String tipoGrafica;
     private long totalParticipantes;
     private List<PreguntaResultadoDTO> preguntas;
-
+    private LocalDateTime fechaLimite;
+    private LocalDateTime fechaVoto;
     @Data
     @Builder
     @NoArgsConstructor

@@ -10,7 +10,6 @@ const POR_PAGINA = 10;
 const TIPOS = {
   VOTACION: { texto: 'Votación', variant: 'info' },
   ENCUESTA: { texto: 'Encuesta', variant: 'neutral' },
-  CUESTIONARIO: { texto: 'Cuestionario', variant: 'neutral' },
 };
 
 const ESTADOS = {
@@ -149,7 +148,6 @@ export default function ModeradorParticipantes() {
           <option value="TODOS">Todos los tipos</option>
           <option value="VOTACION">Votación</option>
           <option value="ENCUESTA">Encuesta</option>
-          <option value="CUESTIONARIO">Cuestionario</option>
         </select>
 
         <select value={estado} onChange={cambiar(setEstado)} aria-label="Estado de participación" className={selectClase}>

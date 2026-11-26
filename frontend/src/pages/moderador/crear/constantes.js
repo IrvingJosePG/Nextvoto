@@ -14,17 +14,11 @@ export const preguntaVacia = () => ({
 export const TIPOS = [
   { valor: 'VOTACION', texto: 'Votación' },
   { valor: 'ENCUESTA', texto: 'Encuesta' },
-  { valor: 'CUESTIONARIO', texto: 'Cuestionario' },
 ];
 
 export const TIPOS_VOTO = [
   { valor: 'ANONIMO', texto: 'Anónimo' },
   { valor: 'IDENTIFICADO', texto: 'Identificado' },
-];
-
-export const SI_NO = [
-  { valor: true, texto: 'Sí' },
-  { valor: false, texto: 'No' },
 ];
 
 export const TIPOS_RESPUESTA = [

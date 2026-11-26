@@ -197,6 +197,7 @@ export default function DashboardVotante() {
                 <CuestionarioCard
                   key={item.idParticipacion ?? idEncuesta}
                   titulo={titulo}
+                  descripcion={item.descripcion}
                   codigoPin={item.codigoPin}
                   etiquetaCierre={cierre.texto}
                   urgente={cierre.urgente}

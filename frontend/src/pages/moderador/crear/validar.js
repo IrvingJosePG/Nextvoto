@@ -1,6 +1,5 @@
 export default function validar(form, preguntas) {
   if (!form.titulo.trim()) return 'El título es obligatorio.';
-  if (!form.dirigidoA.trim()) return 'Escribe a quién va dirigido.';
   if (!form.fechaInicio) return 'Elige la fecha y hora de inicio.';
   if (!form.fechaLimite) return 'Elige la fecha y hora límite.';
   if (new Date(form.fechaLimite) <= new Date()) return 'La fecha límite debe ser futura.';
@@ -9,7 +8,7 @@ export default function validar(form, preguntas) {
   if (form.maxParticipantes !== '' && Number(form.maxParticipantes) < 1)
     return 'El máximo de participantes debe ser al menos 1.';
   if (form.tipo === 'VOTACION' && preguntas.length > 1)
-    return 'Una votación solo puede tener 1 pregunta. Usa Encuesta o Cuestionario para varias.';
+    return 'Una votación solo puede tener 1 pregunta. Usa Encuesta para varias.';
 
   for (const p of preguntas) {
     if (!p.texto.trim()) return 'Todas las preguntas necesitan un enunciado.';
