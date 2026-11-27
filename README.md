@@ -9,7 +9,7 @@
 **Integrantes:**<br>
 Irving José Pérez Gris<br>
 Fernández López Jazmín<br>
-Sandoval Reyes Miguel.
+Sandoval Reyes Miguel
 
 [Repositorio](https://github.com/IrvingJosePG/Nextvoto) ·
 [Proyecto desplegado](https://nextvoto.lat) ·
